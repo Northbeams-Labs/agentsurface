@@ -212,7 +212,35 @@ func writeBaseline(path string, f baselineFile) error {
 	if err := tmp.Close(); err != nil {
 		return err
 	}
-	return os.Rename(name, path)
+	return renameOver(name, path)
+}
+
+// renameOver replaces path with tmp, retrying briefly while the destination is
+// locked.
+//
+// Unix renames over an open file without complaint and returns on the first
+// attempt. Windows does not: replacing a file there fails with "Access is
+// denied." while any other handle to it is open, and Go opens files for reading
+// without FILE_SHARE_DELETE. Two runs at once are enough to hit it, because one
+// is reading the baseline in readBaseline while the other is trying to replace
+// it, and the loser reported a failure the user could do nothing about and lost
+// its baseline write. The lock lasts as long as one small read, so waiting it
+// out is the whole fix.
+//
+// Only a permission error is retried. Anything else is a real failure and comes
+// straight back.
+func renameOver(tmp, path string) error {
+	const (
+		attempts = 60
+		pause    = 50 * time.Millisecond
+	)
+	for i := 0; ; i++ {
+		err := os.Rename(tmp, path)
+		if err == nil || i == attempts-1 || !errors.Is(err, fs.ErrPermission) {
+			return err
+		}
+		time.Sleep(pause)
+	}
 }
 
 // baselineKey identifies one item across runs. The parts are hashed together so

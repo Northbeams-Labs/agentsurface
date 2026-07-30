@@ -342,6 +342,17 @@ func TestUnwritableLocationIsReportedNotFatal(t *testing.T) {
 	}
 }
 
+// TestWriteIsAtomic checks the guarantee that matters: the previous baseline is
+// never the file being written into, so an interrupted run leaves the old one
+// whole rather than half overwritten.
+//
+// It is checked with a hard link rather than os.SameFile. On Windows SameFile
+// re-opens both operands by path at the moment it compares them, so two stats
+// of the same path always look like the same file however many times it has
+// been renamed over, and the check silently proves nothing there. A second link
+// to the original file has no such problem on any platform: if the run wrote in
+// place, the link sees the new bytes; if it renamed over, the link still holds
+// the old ones.
 func TestWriteIsAtomic(t *testing.T) {
 	home := t.TempDir()
 	if _, err := applyBaseline(home, []model.Finding{item("alpha", "sha256:aaa")}); err != nil {
@@ -350,23 +361,25 @@ func TestWriteIsAtomic(t *testing.T) {
 	path := baselinePath(home)
 	dir := filepath.Dir(path)
 
-	fi, err := os.Stat(path)
-	if err != nil {
-		t.Fatal(err)
+	before := readRaw(t, home)
+	witness := filepath.Join(dir, "witness.json")
+	if err := os.Link(path, witness); err != nil {
+		t.Skipf("hard links unavailable, so an in-place write cannot be told apart: %v", err)
 	}
 
-	// A rename puts a different file at the path. A run that wrote over the old
-	// file in place would leave the same file there, and an interrupted run
-	// would have destroyed it.
-	if _, err := applyBaseline(home, []model.Finding{item("alpha", "sha256:aaa")}); err != nil {
+	if _, err := applyBaseline(home, []model.Finding{item("alpha", "sha256:CHANGED")}); err != nil {
 		t.Fatal(err)
 	}
-	after, err := os.Stat(path)
+	if now := readRaw(t, home); now == before {
+		t.Fatal("the second run did not change the baseline, so this proves nothing")
+	}
+
+	held, err := os.ReadFile(witness)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if os.SameFile(fi, after) {
-		t.Error("the baseline was written in place rather than renamed over")
+	if string(held) != before {
+		t.Error("the baseline was written in place rather than renamed over: the previous file changed under the reader holding it")
 	}
 	assertNoLeftovers(t, dir)
 }

@@ -61,3 +61,9 @@ Desktop.ini
 # Scratch space that is useful locally and never wanted in the tree
 /scratch/
 /tmp/
+
+# Test fixtures are data, not editor droppings. Without these negations the
+# rules above silently swallow project-scope fixtures (.vscode/mcp.json was
+# lost this way, and CI failed on every platform with "found 4 servers,
+# want 5" while the tests passed locally).
+!**/testdata/**

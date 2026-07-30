@@ -1,0 +1,5 @@
+<application>
+  <component name="McpServerSettings">
+    <option name="configuration" value="{&quot;mcpServers&quot;:{&quot;memory&quot;:{&quot;command&quot;:&quot;npx&quot;,&quot;args&quot;:[&quot;-y&quot;,&quot;@modelcontextprotocol/server-memory&quot;]}}}" />
+  </component>
+</application>

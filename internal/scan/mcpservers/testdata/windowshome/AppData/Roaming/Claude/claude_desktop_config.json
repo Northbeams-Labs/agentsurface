@@ -1,0 +1,1 @@
+{"mcpServers": {"windows-fs": {"command": "cmd.exe", "args": ["/c", "npx", "-y", "@modelcontextprotocol/server-filesystem", "C:\\Users\\example"]}}}

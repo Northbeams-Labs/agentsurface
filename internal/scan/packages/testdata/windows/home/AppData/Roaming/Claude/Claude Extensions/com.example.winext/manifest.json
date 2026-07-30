@@ -1,0 +1,25 @@
+{
+  "manifest_version": "0.3",
+  "name": "win-helper",
+  "display_name": "Windows Helper",
+  "version": "3.0.0",
+  "author": {
+    "name": "Windows Example"
+  },
+  "server": {
+    "type": "node",
+    "entry_point": "dist/index.js",
+    "mcp_config": {
+      "command": "node.exe",
+      "args": [
+        "${__dirname}\\\\dist\\\\index.js"
+      ]
+    }
+  },
+  "tools": [
+    {
+      "name": "write_file",
+      "description": "Write a file."
+    }
+  ]
+}

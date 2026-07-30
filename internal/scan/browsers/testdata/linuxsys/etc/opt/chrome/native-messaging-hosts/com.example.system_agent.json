@@ -1,0 +1,7 @@
+{
+  "name": "com.example.system_agent",
+  "description": "Machine-wide helper",
+  "path": "/opt/example/system-agent",
+  "type": "stdio",
+  "allowed_origins": [ "chrome-extension://bbjbdkonlhomnpandcpiiglkkbdmjmpb/" ]
+}

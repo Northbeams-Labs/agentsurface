@@ -1,0 +1,63 @@
+# Build output
+/bin/
+/dist/
+agentsurface
+agentsurface.exe
+
+# Go build and test artefacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+*.prof
+coverage.out
+coverage.html
+
+# Go workspace files. A local go.work can silently change what is built, so it
+# stays out of the repository.
+go.work
+go.work.sum
+
+# Signing and release material. Nothing here should ever reach a commit.
+*.pem
+*.key
+*.p12
+*.pfx
+cosign.key
+cosign.password
+checksums.txt
+checksums.txt.sig
+checksums.txt.pem
+*.sbom.json
+*.spdx.json
+
+# Editors and tooling
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.env
+.envrc
+.direnv/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Linux
+.fuse_hidden*
+.Trash-*
+
+# Scratch space that is useful locally and never wanted in the tree
+/scratch/
+/tmp/

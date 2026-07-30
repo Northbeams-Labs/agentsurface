@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "weather": {
+      "command": "node",
+      "args": ["/opt/weather/index.js"],
+      "disabled": true,
+      "autoApprove": ["get_forecast", "get_alerts"]
+    }
+  }
+}

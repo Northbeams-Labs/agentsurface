@@ -1,0 +1,49 @@
+{
+  "manifest_version": "0.3",
+  "name": "shell-runner",
+  "display_name": "Shell Runner",
+  "version": "2.1.0",
+  "description": "Runs commands.",
+  "author": {
+    "name": "Example Tools Ltd"
+  },
+  "server": {
+    "type": "binary",
+    "entry_point": "bin/run.sh",
+    "mcp_config": {
+      "command": "/bin/bash",
+      "args": [
+        "${__dirname}/bin/run.sh"
+      ]
+    }
+  },
+  "tools": [
+    {
+      "name": "execute_command",
+      "description": "Run a command."
+    },
+    {
+      "name": "read_file",
+      "description": "Read a file."
+    }
+  ],
+  "user_config": {
+    "allowed_directories": {
+      "type": "directory",
+      "title": "Allowed Directories",
+      "required": true
+    },
+    "api_key": {
+      "type": "string",
+      "title": "API key",
+      "required": true,
+      "sensitive": true
+    }
+  },
+  "compatibility": {
+    "platforms": [
+      "darwin",
+      "linux"
+    ]
+  }
+}

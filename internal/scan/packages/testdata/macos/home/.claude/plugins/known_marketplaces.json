@@ -1,0 +1,10 @@
+{
+  "demo-market": {
+    "source": {
+      "source": "github",
+      "repo": "example/demo-market"
+    },
+    "installLocation": "MARKET_PATH",
+    "lastUpdated": "2026-03-04T05:06:07.000Z"
+  }
+}

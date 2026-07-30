@@ -1,0 +1,17 @@
+{
+  "theme": "One Dark",
+  "context_servers": {
+    "local-mcp-server": {
+      "command": "some-command",
+      "args": ["arg-1", "arg-2"],
+      "env": {"API_TOKEN": "example-token-value"}
+    },
+    "older-object-command": {
+      "command": {"path": "node", "args": ["/opt/zed-mcp/server.js"], "env": {}}
+    },
+    "remote-mcp-server": {
+      "url": "https://example.com/mcp",
+      "headers": {"Authorization": "Bearer example-header-value"}
+    }
+  }
+}

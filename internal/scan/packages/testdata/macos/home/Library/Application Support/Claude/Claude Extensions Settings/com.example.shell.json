@@ -1,0 +1,9 @@
+{
+  "isEnabled": false,
+  "userConfig": {
+    "api_key": "sk-SECRET-MUST-NOT-APPEAR",
+    "allowed_directories": [
+      "/Users/tester/Secrets"
+    ]
+  }
+}

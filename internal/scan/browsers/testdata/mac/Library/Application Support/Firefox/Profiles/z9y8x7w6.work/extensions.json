@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 35,
+  "addons": [
+    {
+      "id": "87677a2c52b84ad3a151a4a72f5bd3c4@jetpack",
+      "version": "14.1180.0",
+      "type": "extension",
+      "path": "/fixture/grammarly.xpi",
+      "location": "app-profile",
+      "defaultLocale": { "name": "Grammarly for Firefox", "description": "Write confidently.", "creator": "Grammarly" },
+      "userPermissions": { "permissions": ["storage", "cookies", "https://*.grammarly.com/*"], "origins": [] }
+    }
+  ]
+}

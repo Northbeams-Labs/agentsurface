@@ -1,0 +1,1 @@
+- the release key lives in the password manager

@@ -1,0 +1,1 @@
+{"servers": {"profile-only": {"command": "node", "args": ["/opt/tools/index.js"]}}}

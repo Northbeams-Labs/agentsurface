@@ -1,0 +1,7 @@
+{
+  "name": "com.acme.claude_bridge",
+  "description": "Machine-wide agent bridge",
+  "path": "/Library/Acme/bin/claude-bridge",
+  "type": "stdio",
+  "allowed_origins": [ "chrome-extension://fcoeoabgfenejglbffodgkkbkcdhcgfn/" ]
+}

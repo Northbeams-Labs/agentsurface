@@ -1,0 +1,7 @@
+{
+  "name": "com.example.printer",
+  "description": "Label printer helper",
+  "path": "/usr/local/bin/label-host",
+  "type": "stdio",
+  "allowed_origins": [ "chrome-extension://ffgghhiijjkkllmmnnooppaabbccddee/" ]
+}

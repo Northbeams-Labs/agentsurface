@@ -1,0 +1,24 @@
+# Code owners for agentsurface.
+#
+# Review here is done by one person. This file exists so that GitHub requests
+# that review automatically, not to imply a larger team.
+#
+# Syntax: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+* @vibejoe
+
+# The trust surface. Changes here need a closer read than anything else in the
+# repository, because they decide what the released binary is and what it is
+# allowed to contain.
+/.github/workflows/  @vibejoe
+/.goreleaser.yaml    @vibejoe
+/Makefile            @vibejoe
+/go.mod              @vibejoe
+/go.sum              @vibejoe
+
+# The published promises. Wording changes here are substantive.
+/LICENSE             @vibejoe
+/NOTICE              @vibejoe
+/SECURITY.md         @vibejoe
+/PRIVACY.md          @vibejoe
+/TRADEMARK.md        @vibejoe

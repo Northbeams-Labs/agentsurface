@@ -1,0 +1,1 @@
+{"mcpServers": {"sqlite": {"command": "npx", "args": ["-y", "mcp-sqlite", "/Users/example/db.sqlite"]}}}

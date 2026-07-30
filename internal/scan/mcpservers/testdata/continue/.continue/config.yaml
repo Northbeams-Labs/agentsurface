@@ -1,0 +1,6 @@
+name: local assistant
+mcpServers:
+  - name: Browser search
+    command: npx
+    args:
+      - "@playwright/mcp@latest"

@@ -1,0 +1,104 @@
+name: Support a client or platform
+description: Ask for coverage of an application, editor, browser or operating system that agentsurface does not read yet.
+title: "support: "
+labels:
+  - detection
+  - coverage
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This template is for **reading more local paths**. That is the only kind
+        of coverage this tool can add.
+
+        Some things are settled decisions and cannot be added regardless of
+        demand, because they would require a network call or a judgement the
+        tool is not willing to make. They are listed in the "What we will not
+        take" section of
+        [CONTRIBUTING.md](https://github.com/Northbeams-Labs/agentsurface/blob/main/CONTRIBUTING.md):
+        no network calls, no telemetry, no accounts, no risk scores, and nothing
+        found on the machine is ever executed.
+
+        **Redact before pasting.** Replace API keys and tokens with `REDACTED`.
+
+  - type: input
+    id: client
+    attributes:
+      label: Which client or platform
+      description: The application, editor, browser or operating system, and its version.
+      placeholder: Example Editor 2.4, or FreeBSD 14
+    validations:
+      required: true
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What it holds that we would find
+      options:
+        - Model context protocol servers
+        - Desktop extensions or plugins
+        - Skills or connectors
+        - Instruction files
+        - Browser extensions
+        - Scheduled agent tasks
+        - Several of these
+    validations:
+      required: true
+
+  - type: textarea
+    id: paths
+    attributes:
+      label: Where the configuration lives
+      description: >-
+        The paths we would need to read, per operating system if they differ.
+        Replace your username with USER. This is the part that decides whether
+        the request can be acted on.
+      placeholder: |
+        macOS:   /Users/USER/Library/Application Support/Example/mcp.json
+        Linux:   /home/USER/.config/example/mcp.json
+        Windows: C:\Users\USER\AppData\Roaming\Example\mcp.json
+        Project: <repo>/.example/mcp.json
+    validations:
+      required: true
+
+  - type: textarea
+    id: format
+    attributes:
+      label: An example file, redacted
+      description: >-
+        A real example with the secrets removed. Say if the format is documented
+        publicly and link the documentation.
+      render: json
+    validations:
+      required: true
+
+  - type: input
+    id: docs
+    attributes:
+      label: Link to the format's documentation
+      description: If the vendor documents this file format publicly, link it here.
+    validations:
+      required: false
+
+  - type: textarea
+    id: stability
+    attributes:
+      label: How stable is this path
+      description: >-
+        Does the vendor change it between versions? Is it different for a
+        store-installed build versus a downloaded one? Honest guesses are fine,
+        and so is "I do not know".
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Before submitting
+      options:
+        - label: This can be satisfied by reading local files. It does not need a network call, an account or an API.
+          required: true
+        - label: I have replaced every secret and token with REDACTED.
+          required: true
+        - label: I am willing to test a build against my machine.
+          required: false

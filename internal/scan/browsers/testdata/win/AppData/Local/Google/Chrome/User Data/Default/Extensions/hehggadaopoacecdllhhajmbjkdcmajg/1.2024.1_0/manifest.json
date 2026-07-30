@@ -1,0 +1,9 @@
+{
+  "manifest_version": 3,
+  "name": "ChatGPT",
+  "description": "Ask ChatGPT from your browser.",
+  "author": "OpenAI",
+  "version": "1.2024.1",
+  "permissions": [ "storage", "tabs", "scripting", "clipboardWrite" ],
+  "host_permissions": [ "https://chatgpt.com/*" ]
+}

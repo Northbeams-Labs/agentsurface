@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "linear": {
+      "url": "https://mcp.example.com/sse",
+      "headers": {"Authorization": "Bearer example-header-value"}
+    },
+    "local-tools": {
+      "command": "bash",
+      "args": ["-lc", "./run-mcp.sh"]
+    }
+  }
+}

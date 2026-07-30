@@ -1,0 +1,78 @@
+name: no-network
+
+# agentsurface is published on the basis that it makes no network calls of any
+# kind: no telemetry, no update check, no catalogue lookup, no model call. That
+# claim appears in README.md, PRIVACY.md and SECURITY.md.
+#
+# This workflow is what makes the claim checkable rather than asserted. It is a
+# required check. If it fails, the change does not merge and the release does
+# not ship.
+#
+# The check is deliberately not a grep over source text. Source text can be
+# obfuscated, hidden behind a build tag, or reached indirectly through a
+# dependency. It works on the dependency graph and on the compiled artefact
+# instead. The rules, and what is allowed and why, are documented at the top of
+# .github/scripts/no-network.sh, which is the same script `make verify` runs.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: no-network-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dependency-graph:
+    name: dependency graph and compiled binaries
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+          check-latest: true
+
+      - name: Print the whole dependency graph
+        # Printed in full so that a reader of the log can see every package the
+        # binary is built from, rather than trusting the check that follows.
+        run: go list -deps -f '{{.ImportPath}} standard={{.Standard}}' ./cmd/agentsurface
+
+      - name: Run the no-network check
+        run: bash .github/scripts/no-network.sh
+
+  go-test-guard:
+    name: in-repo guard test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+          check-latest: true
+
+      - name: Run the guard test
+        # The same rules expressed as a Go test, so that a contributor running
+        # `go test ./...` finds a network dependency without knowing this
+        # workflow exists.
+        run: go test -count=1 -v ./internal/networkguard/...

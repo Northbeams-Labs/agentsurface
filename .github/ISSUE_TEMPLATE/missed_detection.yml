@@ -1,0 +1,117 @@
+name: Missed detection, or a wrong one
+description: Something is installed on your machine and agentsurface did not report it, or reported it incorrectly.
+title: "missed: "
+labels:
+  - detection
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This is the most useful kind of issue this project receives. The tool
+        can only find paths somebody has told it about.
+
+        Two things worth checking first:
+
+        - [docs/DETECTIONS.md](https://github.com/Northbeams-Labs/agentsurface/blob/main/docs/DETECTIONS.md)
+          lists what each detector reads and what it knowingly misses. If your
+          case is already listed there as a known gap, an issue is still welcome,
+          but say so.
+        - Every run prints a "What this did not look at" section. If your case
+          appears there, the tool already knows it is blind to it.
+
+        **Redact before pasting.** Configuration files for agent tooling often
+        contain API keys and tokens. Replace them with `REDACTED`. A file with
+        the structure intact and the secrets removed is exactly what we need.
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What kind of thing was missed
+      description: These match the `kind` field in JSON output.
+      options:
+        - Model context protocol server (mcp_server)
+        - Desktop extension (extension)
+        - Plugin (plugin)
+        - Skill (skill)
+        - Connector (connector)
+        - Instruction file (instruction_file)
+        - Browser extension (browser_extension)
+        - Scheduled agent task (scheduled_task)
+        - Something that does not fit any of these
+    validations:
+      required: true
+
+  - type: dropdown
+    id: problem
+    attributes:
+      label: Which problem is it
+      options:
+        - Not reported at all
+        - Reported, but with the wrong name, publisher or version
+        - Reported, but the "can reach" list is wrong
+        - Reported as changed since the last run when nothing changed
+        - Changed under me and was not reported as changed
+    validations:
+      required: true
+
+  - type: input
+    id: client
+    attributes:
+      label: Which client or application owns it
+      placeholder: The editor, desktop app or browser it belongs to, and its version.
+    validations:
+      required: true
+
+  - type: input
+    id: path
+    attributes:
+      label: Where it lives on disk
+      description: The path we should have looked at. Replace your username with USER.
+      placeholder: /Users/USER/Library/Application Support/Example/config.json
+    validations:
+      required: true
+
+  - type: textarea
+    id: file
+    attributes:
+      label: The file, redacted
+      description: >-
+        The configuration that declares it, with every secret replaced by
+        REDACTED. Structure matters, values do not.
+      render: json
+    validations:
+      required: true
+
+  - type: textarea
+    id: output
+    attributes:
+      label: What agentsurface printed
+      description: Output of `agentsurface`, redacted. Include the gaps section.
+      render: text
+    validations:
+      required: false
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: The output of `agentsurface --version`.
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: Operating system and version
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Before submitting
+      options:
+        - label: I have replaced every secret, token and API key with REDACTED.
+          required: true
+        - label: I checked docs/DETECTIONS.md and the run's own "What this did not look at" section.
+          required: true

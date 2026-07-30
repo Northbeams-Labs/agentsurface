@@ -1,0 +1,9 @@
+{
+  "manifest_version": 3,
+  "name": "Claude",
+  "description": "Claude in Chrome",
+  "version": "1.0.84",
+  "host_permissions": [ "<all_urls>" ],
+  "permissions": [ "sidePanel", "storage", "activeTab", "scripting", "debugger", "tabGroups", "tabs", "alarms", "notifications", "webNavigation", "offscreen", "nativeMessaging", "unlimitedStorage", "downloads", "identity" ],
+  "content_scripts": [ { "js": [ "a.js" ], "matches": [ "<all_urls>" ] } ]
+}

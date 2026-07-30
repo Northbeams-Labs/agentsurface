@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/Users/example/Documents"]
+    },
+    "apple-notes": {
+      "command": "/usr/bin/osascript",
+      "args": ["-e", "tell application \"Notes\" to get every note"]
+    },
+    "github": {
+      "command": "docker",
+      "args": ["run", "-i", "--rm", "-e", "GITHUB_PERSONAL_ACCESS_TOKEN", "ghcr.io/github/github-mcp-server"],
+      "env": {"GITHUB_PERSONAL_ACCESS_TOKEN": "example-secret-value-do-not-copy-9f3a"}
+    }
+  }
+}

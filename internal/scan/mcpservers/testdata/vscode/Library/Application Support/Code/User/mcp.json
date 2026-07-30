@@ -1,0 +1,15 @@
+{
+  // GitHub's hosted server, added from the gallery.
+  "servers": {
+    "github": {
+      "type": "http",
+      "url": "https://api.githubcopilot.com/mcp"
+    },
+    /* a local one, added by hand */
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@microsoft/mcp-server-playwright"],
+    },
+  },
+  "inputs": []
+}

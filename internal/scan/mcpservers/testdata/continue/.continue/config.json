@@ -1,0 +1,7 @@
+{
+  "experimental": {
+    "modelContextProtocolServers": [
+      {"transport": {"type": "stdio", "command": "uvx", "args": ["mcp-server-fetch"]}}
+    ]
+  }
+}

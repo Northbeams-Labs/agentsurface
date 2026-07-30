@@ -1,0 +1,28 @@
+{
+  "dxt_version": "0.1",
+  "name": "Control your Mac",
+  "version": "0.0.1",
+  "description": "Execute AppleScript to automate tasks on macOS.",
+  "author": {
+    "name": "Kenneth Example",
+    "url": "https://example.com"
+  },
+  "server": {
+    "type": "node",
+    "entry_point": "server/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/server/index.js"
+      ],
+      "env": {}
+    }
+  },
+  "tools": [
+    {
+      "name": "osascript",
+      "description": "Execute `osascript -e <script>`"
+    }
+  ],
+  "license": "MIT"
+}

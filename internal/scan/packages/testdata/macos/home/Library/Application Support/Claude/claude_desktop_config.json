@@ -1,0 +1,23 @@
+{
+  "mcpServers": {
+    "local-thing": {
+      "command": "node",
+      "args": [
+        "/opt/local/server.js"
+      ]
+    },
+    "team-hub": {
+      "type": "http",
+      "url": "https://hub.example.com/mcp",
+      "headers": {
+        "Authorization": "Bearer SECRET-MUST-NOT-APPEAR"
+      }
+    }
+  },
+  "connectors": {
+    "notes-connector": {
+      "type": "sse",
+      "url": "https://notes.example.com/sse"
+    }
+  }
+}

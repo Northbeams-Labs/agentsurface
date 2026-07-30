@@ -1,0 +1,1 @@
+{"mcpServers": {"repo-cursor": {"command": "node", "args": ["./tools/mcp.js"]}}}

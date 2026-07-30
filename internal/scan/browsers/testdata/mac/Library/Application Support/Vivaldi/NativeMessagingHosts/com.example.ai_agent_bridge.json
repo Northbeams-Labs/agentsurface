@@ -1,0 +1,7 @@
+{
+  "name": "com.example.ai_agent_bridge",
+  "description": "Example agent bridge, registered for a browser that was never run",
+  "path": "/Applications/Example.app/Contents/Helpers/agent-host",
+  "type": "stdio",
+  "allowed_origins": [ "chrome-extension://aabbccddeeffgghhiijjkkllmmnnoopp/" ]
+}

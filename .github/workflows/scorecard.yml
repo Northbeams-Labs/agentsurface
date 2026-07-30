@@ -1,0 +1,62 @@
+name: scorecard
+
+# OpenSSF Scorecard. It grades the repository against a published list of
+# checks (https://github.com/ossf/scorecard/blob/main/docs/checks.md), so it is
+# an outside opinion on the repository's practices rather than our own.
+#
+# Results are uploaded to the code scanning tab, where they can be read
+# alongside anything else that reports SARIF.
+#
+# Actions are pinned to full commit SHAs. See the note in ci.yml for why.
+
+on:
+  schedule:
+    # Mondays, 06:40 UTC. Off the hour, because the top of the hour is when
+    # every scheduled workflow on GitHub queues at once.
+    - cron: "40 6 * * 1"
+  push:
+    branches: [main]
+  branch_protection_rule:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  analysis:
+    name: scorecard analysis
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write # upload the SARIF result to code scanning
+      id-token: write # sign the result for the public dataset when publishing
+      contents: read
+      actions: read
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Run analysis
+        uses: ossf/scorecard-action@2d1146689b8cda280b9bc96326124645441f03bc # v2.4.4
+        with:
+          results_file: results.sarif
+          results_format: sarif
+          # publish_results uploads to the public OpenSSF dataset, which is what
+          # backs the Scorecard badge. It only works on a public repository.
+          # This repository is private, so it stays false. Turn it on in the
+          # same change that makes the repository public, and add the badge to
+          # README.md then, not before.
+          publish_results: false
+
+      - name: Keep the SARIF file
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: scorecard-results
+          path: results.sarif
+          retention-days: 5
+
+      - name: Upload to code scanning
+        uses: github/codeql-action/upload-sarif@f205ea1c3313d32999d8d6a48b4f6530d4437b38 # v4
+        with:
+          sarif_file: results.sarif

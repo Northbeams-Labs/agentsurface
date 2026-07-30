@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "plugins": {
+    "demo-plugin@demo-market": [
+      {
+        "scope": "user",
+        "installPath": "PLUGIN_INSTALL_PATH",
+        "version": "1.2.0",
+        "installedAt": "2026-03-04T05:06:07.000Z",
+        "gitCommitSha": "2ab958093e83e0ec752e6c1c5932da465bf23e0c"
+      }
+    ],
+    "local-plugin": [
+      {
+        "scope": "user",
+        "installPath": "LOCAL_PLUGIN_PATH",
+        "version": "0.1.0"
+      }
+    ]
+  }
+}

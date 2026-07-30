@@ -1,0 +1,7 @@
+{
+  "name": "com.example.gpt_relay",
+  "description": "Relay to a local model",
+  "path": "/opt/example/gpt-relay",
+  "type": "stdio",
+  "allowed_extensions": [ "{aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee}" ]
+}

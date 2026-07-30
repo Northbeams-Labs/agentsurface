@@ -1,0 +1,1 @@
+{ "manifest_version": 3, "name": "System AI Component", "version": "1.0", "permissions": [ "storage" ] }

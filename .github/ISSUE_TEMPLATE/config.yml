@@ -1,0 +1,33 @@
+blank_issues_enabled: false
+
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/Northbeams-Labs/agentsurface/security/advisories/new
+    about: >-
+      Private vulnerability reporting. Do not open a public issue for a security
+      problem. See SECURITY.md for scope and for what we commit to.
+
+  - name: What each detector looks at, and what it misses
+    url: https://github.com/Northbeams-Labs/agentsurface/blob/main/docs/DETECTIONS.md
+    about: >-
+      Before reporting a missed detection, check whether the gap is already
+      documented here.
+
+  - name: What the tool stores and sends
+    url: https://github.com/Northbeams-Labs/agentsurface/blob/main/PRIVACY.md
+    about: >-
+      It makes no network calls and writes one local file of hashes. This page
+      says where that file is and how to switch it off.
+
+  - name: Verify a release
+    url: https://github.com/Northbeams-Labs/agentsurface/blob/main/docs/VERIFY.md
+    about: >-
+      Checksums, signature, build provenance, and how to reproduce the build
+      yourself.
+
+  - name: Questions and ideas
+    url: https://github.com/Northbeams-Labs/agentsurface/discussions
+    about: >-
+      Usage questions and open-ended discussion. Note that several things are
+      settled decisions rather than open questions: see the "What we will not
+      take" section of CONTRIBUTING.md.

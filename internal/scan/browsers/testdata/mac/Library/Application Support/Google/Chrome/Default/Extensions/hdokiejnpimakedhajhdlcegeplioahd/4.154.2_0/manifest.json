@@ -1,0 +1,10 @@
+{
+  "manifest_version": 3,
+  "name": "LastPass: Free Password Manager",
+  "description": "__MSG_appDesc__",
+  "default_locale": "en",
+  "author": "LastPass",
+  "version": "4.154.2",
+  "permissions": [ "scripting", "tabs", "notifications", "contextMenus", "storage", "unlimitedStorage", "webNavigation", "webRequest", "webRequestAuthProvider", "offscreen", "alarms", "cookies" ],
+  "host_permissions": [ "http://*/*", "https://*/*" ]
+}

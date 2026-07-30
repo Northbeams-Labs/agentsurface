@@ -1,0 +1,199 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+#
+# Release configuration for agentsurface.
+#
+# Two decisions in here are deliberate and are explained where they appear:
+#
+#   1. There is no Windows build. See the note above the `builds` section.
+#   2. The binaries are not stripped. See the note on `ldflags`.
+#
+# Everything this produces is meant to be checkable by someone who does not
+# trust us: reproducible binaries, a checksums file, a cosign signature over
+# that file, an SBOM per archive, and a build provenance attestation added by
+# the release workflow. docs/VERIFY.md is the reader's side of that.
+
+version: 2
+
+project_name: agentsurface
+
+before:
+  hooks:
+    - go mod download
+    # The release cannot ship an artefact that would fail the no-network check.
+    # The release workflow runs this as a gate job too; running it here as well
+    # means a local `goreleaser release --snapshot` cannot skip it either.
+    - bash .github/scripts/no-network.sh
+
+builds:
+  # macOS and Linux only.
+  #
+  # Windows is deliberately deferred, and the reason is signing rather than
+  # code. Go builds a working windows/amd64 binary today, and CI compiles it on
+  # every push so it does not rot. What is missing is Authenticode signing: an
+  # unsigned Windows download triggers a SmartScreen warning, and a security
+  # tool that makes the operating system warn about it is a worse trust story
+  # than one that is honest about not shipping a Windows build yet. Signing
+  # costs real money (Azure Trusted Signing is billed monthly, traditional
+  # certificates annually), so it is a spending decision, not a build task.
+  # When that decision is taken, add windows to goos here and an Authenticode
+  # step to the release workflow at the same time.
+  - id: agentsurface
+    main: ./cmd/agentsurface
+    binary: agentsurface
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+      - linux
+    goarch:
+      - amd64
+      - arm64
+    flags:
+      # -trimpath removes the build machine's file paths from the binary, which
+      # is the single largest source of non-reproducibility in a Go build.
+      - -trimpath
+    ldflags:
+      # Only the version is stamped. Note what is not here: -s and -w, which
+      # would strip the symbol table.
+      #
+      # Stripping saves a couple of megabytes and costs the one thing this tool
+      # is built to offer. With symbols intact, anyone holding a released
+      # binary can run
+      #
+      #     go tool nm $(which agentsurface) | grep -E ' (net|net/http|crypto/tls)\.'
+      #
+      # and see for themselves that there is no network code in it. That check
+      # is impossible on a stripped binary. Size is the cheaper thing to give
+      # up.
+      - -X main.version={{ .Version }}
+    # Pin the embedded modification timestamp to the commit, so two builds of
+    # the same commit produce the same bytes.
+    mod_timestamp: "{{ .CommitTimestamp }}"
+
+universal_binaries:
+  # One macOS artefact that runs natively on both Apple Silicon and Intel.
+  # replace: true removes the two single-architecture macOS builds from the
+  # release, so there is one macOS download and no chance of taking the wrong
+  # one.
+  - id: agentsurface
+    ids:
+      - agentsurface
+    replace: true
+    name_template: agentsurface
+
+archives:
+  - id: agentsurface
+    ids:
+      - agentsurface
+    formats:
+      - tar.gz
+    name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_
+      {{- if eq .Os "darwin" }}macos{{ else }}{{ .Os }}{{ end }}_
+      {{- if eq .Arch "all" }}universal{{ else }}{{ .Arch }}{{ end }}
+    # The licence, the notice and the promises travel with the binary, so that
+    # an extracted archive is self-describing without the repository.
+    files:
+      - LICENSE
+      - NOTICE
+      - README.md
+      - PRIVACY.md
+      - SECURITY.md
+      - TRADEMARK.md
+      - CHANGELOG.md
+      - src: docs/*.md
+        dst: docs
+
+checksum:
+  name_template: checksums.txt
+  algorithm: sha256
+
+signs:
+  # Keyless cosign over the checksums file. There is no private key anywhere,
+  # so there is no private key to be stolen: the signature is bound to the
+  # release workflow's OIDC identity and recorded in the public Sigstore
+  # transparency log. Signing the checksums file rather than each archive means
+  # one signature covers every artefact, and the verification steps in
+  # docs/VERIFY.md stay short enough that someone might actually run them.
+  - id: checksums
+    cmd: cosign
+    signature: "${artifact}.sig"
+    certificate: "${artifact}.pem"
+    args:
+      - sign-blob
+      - "--output-signature=${signature}"
+      - "--output-certificate=${certificate}"
+      - "${artifact}"
+      - "--yes"
+    artifacts: checksum
+    output: true
+
+sboms:
+  # A software bill of materials per archive, produced by syft. For a module
+  # with no third-party dependencies this is a short document, which is the
+  # point: the SBOM is how a reader confirms that rather than taking our word
+  # for it.
+  - id: archives
+    artifacts: archive
+    documents:
+      - "${artifact}.sbom.json"
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-snapshot-{{ .ShortCommit }}"
+
+changelog:
+  use: github
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^ci:"
+      - "^chore:"
+      - Merge pull request
+      - Merge branch
+  groups:
+    - title: Detection changes
+      regexp: '^.*?(detect|scan)(\([[:word:]]+\))??!?:.+$'
+      order: 0
+    - title: Fixes
+      regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
+      order: 1
+    - title: Everything else
+      order: 99
+
+release:
+  draft: false
+  prerelease: auto
+  mode: append
+  footer: |
+    ---
+
+    **Verify this release before you run it.** `docs/VERIFY.md` in this tag has
+    copy-pasteable commands for the checksums, the cosign signature, the build
+    provenance attestation, and rebuilding the binary from source to confirm it
+    matches.
+
+    This tool makes no network calls, has no account and uploads nothing.
+    `.github/workflows/no-network.yml` is the check that enforces that, and it
+    ran on this commit before these artefacts were built.
+
+# Homebrew tap.
+#
+# Left switched off on purpose. Turning it on needs a tap repository to exist
+# and a token with write access to it, and a release that tries to push a
+# formula into a repository that is not there fails after the artefacts have
+# already been uploaded. Enable this in the same change that creates the tap,
+# not before.
+#
+# homebrew_casks:
+#   - name: agentsurface
+#     repository:
+#       owner: Northbeams-Labs
+#       name: homebrew-tap
+#       token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+#     homepage: https://labs.northbeams.com
+#     description: Local inventory of the AI agent machinery installed on this machine.
+#     license: Apache-2.0
+
+report_sizes: true

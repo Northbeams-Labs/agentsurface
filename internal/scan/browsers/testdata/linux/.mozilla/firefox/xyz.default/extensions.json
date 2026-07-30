@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 35,
+  "addons": [
+    {
+      "id": "{aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee}",
+      "version": "2.0.0",
+      "type": "extension",
+      "path": "/fixture/tabsaver.xpi",
+      "defaultLocale": { "name": "Tab Saver", "description": "Saves your open tabs.", "creator": "Tab Saver" },
+      "userPermissions": { "permissions": ["tabs", "storage", "nativeMessaging"], "origins": [] }
+    },
+    {
+      "id": "reader@example.com",
+      "version": "1.1.0",
+      "type": "extension",
+      "path": "/fixture/reader.xpi",
+      "defaultLocale": { "name": "Reader Mode", "description": "Strips clutter from articles.", "creator": "Reader Co" },
+      "userPermissions": { "permissions": ["storage", "activeTab"], "origins": ["<all_urls>"] }
+    }
+  ]
+}

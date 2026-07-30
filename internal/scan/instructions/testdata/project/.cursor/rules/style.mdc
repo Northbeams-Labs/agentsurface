@@ -1,0 +1,6 @@
+---
+description: House style
+globs: **/*.go
+alwaysApply: true
+---
+Keep functions short.

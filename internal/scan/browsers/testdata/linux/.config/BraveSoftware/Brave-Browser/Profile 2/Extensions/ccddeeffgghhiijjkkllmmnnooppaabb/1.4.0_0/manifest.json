@@ -1,0 +1,8 @@
+{
+  "manifest_version": 3,
+  "name": "Tab Utility Pro",
+  "description": "Handy tools for your tabs.",
+  "version": "1.4.0",
+  "permissions": [ "storage", "scripting", "nativeMessaging" ],
+  "host_permissions": [ "*://*/*" ]
+}

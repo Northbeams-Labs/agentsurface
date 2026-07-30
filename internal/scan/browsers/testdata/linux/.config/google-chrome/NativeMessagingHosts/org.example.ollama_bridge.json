@@ -1,0 +1,7 @@
+{
+  "name": "org.example.ollama_bridge",
+  "description": "Local model bridge",
+  "path": "/usr/local/bin/ollama-bridge",
+  "type": "stdio",
+  "allowed_origins": [ "chrome-extension://bbjbdkonlhomnpandcpiiglkkbdmjmpb/" ]
+}

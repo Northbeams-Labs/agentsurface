@@ -1,0 +1,144 @@
+name: release
+
+# Runs on a version tag. Produces macOS and Linux binaries, a checksums file, a
+# cosign signature over the checksums, an SBOM per artefact, and a GitHub build
+# provenance attestation. There is no Windows artefact yet: see the comment at
+# the top of .goreleaser.yaml.
+#
+# Nothing here is ever run on a laptop. The whole point of the release being
+# built by CI is that the provenance attestation names a workflow, a repository
+# and a commit that anyone can go and read.
+#
+# Actions are pinned to full commit SHAs. See the note in ci.yml for why.
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Build the artefacts without publishing a release
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  guard:
+    # The no-network check runs before anything is built for release, so that a
+    # tag can never ship an artefact that would fail it.
+    name: no-network gate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+          check-latest: true
+
+      - name: Run the no-network check
+        run: bash .github/scripts/no-network.sh
+
+      - name: Run the guard test
+        run: go test -count=1 ./internal/networkguard/...
+
+      - name: Test
+        run: go test -count=1 ./...
+
+  release:
+    name: goreleaser
+    needs: guard
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # create the GitHub release and upload artefacts
+      id-token: write # keyless cosign signing and provenance, via OIDC
+      attestations: write # write the build provenance attestation
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # GoReleaser needs the full history and the tags to work out the
+          # version and the changelog.
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          # Pinned to an exact patch version, not go.mod's `go 1.26` line and
+          # not check-latest. A different compiler produces different bytes, so
+          # the reproducible build recipe in docs/VERIFY.md is only true if the
+          # release names the compiler it used. Bump this and docs/VERIFY.md in
+          # the same commit.
+          go-version: "1.26.5"
+          check-latest: false
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+
+      - name: Install syft
+        # GoReleaser shells out to syft to produce the SBOMs declared in
+        # .goreleaser.yaml. install-only means the action installs the binary
+        # and does not run a scan of its own.
+        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
+        with:
+          install-only: true
+
+      - name: Record the toolchain
+        # Printed into the log so that docs/VERIFY.md's reproducible build
+        # recipe can be checked against what actually built the release.
+        run: |
+          go version
+          cosign version
+          syft version
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@f06c13b6b1a9625abc9e6e439d9c05a8f2190e94 # v7.2.3
+        with:
+          distribution: goreleaser
+          version: "~> v2"
+          args: >-
+            release --clean
+            ${{ github.event_name == 'workflow_dispatch' && '--snapshot --skip=publish,announce' || '' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Keyless cosign. No private key exists to be stolen; the signature is
+          # bound to this workflow's OIDC identity and recorded in the public
+          # Sigstore transparency log.
+          COSIGN_YES: "true"
+
+      - name: Attest build provenance for the binaries
+        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
+        with:
+          subject-path: |
+            dist/**/agentsurface
+            dist/**/agentsurface_*
+
+      - name: Attest build provenance for the checksums file
+        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
+        with:
+          subject-path: dist/checksums.txt
+
+      - name: Keep the artefacts on the run
+        # Useful for a dry run, and it means the exact bytes are retrievable
+        # independently of the release page.
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: dist
+          path: |
+            dist/*.tar.gz
+            dist/checksums.txt
+            dist/checksums.txt.pem
+            dist/checksums.txt.sig
+            dist/*.sbom.json
+          retention-days: 14
+          if-no-files-found: error

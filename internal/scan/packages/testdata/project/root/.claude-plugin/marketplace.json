@@ -1,0 +1,14 @@
+{
+  "name": "repo-market",
+  "owner": {
+    "name": "Repo Owner"
+  },
+  "plugins": [
+    {
+      "name": "one"
+    },
+    {
+      "name": "two"
+    }
+  ]
+}

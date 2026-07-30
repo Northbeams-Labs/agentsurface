@@ -1,0 +1,7 @@
+{
+  "name": "com.example.notes_sync",
+  "description": "Notes sync helper",
+  "path": "/usr/local/bin/notes-sync",
+  "type": "stdio",
+  "allowed_extensions": [ "notes@example.com" ]
+}

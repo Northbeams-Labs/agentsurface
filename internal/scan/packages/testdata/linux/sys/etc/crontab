@@ -1,0 +1,4 @@
+# m h dom mon dow user command
+SHELL=/bin/sh
+0 3 * * * root /usr/local/bin/codex exec "nightly triage"
+*/5 * * * * root /usr/bin/rsync -a /src /dst

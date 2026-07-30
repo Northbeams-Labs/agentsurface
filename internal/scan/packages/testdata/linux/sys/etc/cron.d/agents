@@ -1,0 +1,1 @@
+@daily tester /usr/local/bin/gemini --prompt "daily digest"

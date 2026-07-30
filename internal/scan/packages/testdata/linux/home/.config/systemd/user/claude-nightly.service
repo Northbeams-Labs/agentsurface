@@ -1,0 +1,9 @@
+[Unit]
+Description=Nightly agent run
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/claude -p "summarise yesterday"
+
+[Install]
+WantedBy=default.target

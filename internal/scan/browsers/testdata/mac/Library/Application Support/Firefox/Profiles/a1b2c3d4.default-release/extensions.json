@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 35,
+  "addons": [
+    {
+      "id": "uBlock0@raymondhill.net",
+      "version": "1.57.2",
+      "type": "extension",
+      "path": "/fixture/uBlock0@raymondhill.net.xpi",
+      "location": "app-profile",
+      "defaultLocale": { "name": "uBlock Origin", "description": "Finally, an efficient blocker.", "creator": "Raymond Hill" },
+      "userPermissions": { "permissions": ["dns", "menus", "privacy", "storage", "unlimitedStorage", "webNavigation", "webRequest"], "origins": ["<all_urls>"] }
+    },
+    {
+      "id": "{4d5e6f70-1234-4a2b-9c8d-000000000001}",
+      "version": "0.4.2",
+      "type": "extension",
+      "path": "/fixture/pagepilot.xpi",
+      "location": "app-profile",
+      "defaultLocale": { "name": "PagePilot", "description": "An AI agent that reads the page for you.", "creator": "PagePilot Labs" },
+      "userPermissions": { "permissions": ["tabs", "nativeMessaging", "clipboardWrite"], "origins": ["<all_urls>"] },
+      "optionalPermissions": { "permissions": ["cookies"], "origins": [] }
+    },
+    {
+      "id": "langpack-en-GB@firefox.mozilla.org",
+      "version": "1.0",
+      "type": "locale",
+      "defaultLocale": { "name": "British English AI Language Pack", "creator": "Mozilla" }
+    }
+  ]
+}

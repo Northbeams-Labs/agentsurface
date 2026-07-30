@@ -1,0 +1,25 @@
+{
+  "extensions": {
+    "com.example.osascript": {
+      "id": "com.example.osascript",
+      "version": "0.0.1",
+      "hash": "aaaa1111",
+      "installedAt": "2026-01-02T03:04:05.000Z",
+      "source": "registry",
+      "signatureInfo": {
+        "status": "signed",
+        "publisher": "Example Publisher CA"
+      }
+    },
+    "com.example.shell": {
+      "id": "com.example.shell",
+      "version": "2.1.0",
+      "hash": "bbbb2222",
+      "installedAt": "2026-02-03T04:05:06.000Z",
+      "source": "registry",
+      "signatureInfo": {
+        "status": "unsigned"
+      }
+    }
+  }
+}

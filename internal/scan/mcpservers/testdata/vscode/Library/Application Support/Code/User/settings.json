@@ -1,0 +1,8 @@
+{
+  "editor.fontSize": 13,
+  "mcp": {
+    "servers": {
+      "legacy-placement": {"command": "python3", "args": ["-m", "legacy_mcp"]}
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "manifest_version": 3,
+  "name": "Ad Blocker Lite",
+  "description": "Blocks banners and pop-ups.",
+  "version": "3.2.0",
+  "permissions": [ "declarativeNetRequest" ],
+  "host_permissions": [ "<all_urls>" ]
+}

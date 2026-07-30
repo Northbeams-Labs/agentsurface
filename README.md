@@ -1,0 +1,230 @@
+# agentsurface
+
+A command-line tool that inventories the AI agent machinery installed on your
+own machine.
+
+It reads local configuration and lists what it finds: model context protocol
+servers across every client it knows, desktop extensions, plugins, skills,
+connectors, scheduled agent tasks, instruction files, and AI-aware browser
+extensions. It records where each item came from, who published it according to
+its own manifest, and what its declared configuration says it can reach.
+
+It answers one question: **what agent machinery is actually on this machine, and
+who put it there.**
+
+It reads. It does not judge, and it does not act.
+
+## What it refuses to do
+
+These are enforced or settled, not aspirations.
+
+- **No network calls of any kind.** Not for telemetry, version checks,
+  catalogue lookups, crash reports or model calls. This is checked in CI on
+  every push, and a release cannot ship if the check fails. See
+  [PRIVACY.md](PRIVACY.md) and
+  [`.github/workflows/no-network.yml`](.github/workflows/no-network.yml).
+- **No account, no token, no sign-up, no licence key.**
+- **No upload.** Nothing found on your machine leaves your machine.
+- **It never executes anything it finds.** It will read the configuration that
+  says how an MCP server starts. It will not start it. The compiled binary
+  cannot start a process at all: `os/exec` is on the denied list in the same CI
+  check.
+- **It never opens browsing data.** No history, cookies, local storage, saved
+  passwords or profile identities. Extension manifests and native messaging
+  host manifests only.
+- **No risk score, no grade, no letter rating.** A score would be a claim we
+  could not defend line by line.
+- **It writes one file**, a local baseline of hashes at
+  `~/.config/agentsurface/baseline.json`, which you can switch off with
+  `--no-baseline`.
+
+## What this does not do
+
+This section is here rather than at the bottom because it is the part that
+decides whether the tool is any use to you.
+
+1. **It does not tell you whether anything it finds is safe.** It is an
+   inventory. `not in catalogue` means the catalogue snapshot inside the binary
+   has no entry for that item. It does not mean anything is wrong with it.
+2. **It does not detect prompt injection**, and does not attempt to. Where it
+   reports that an instruction file contains a particular kind of wording, that
+   is an observation about text.
+3. **It reads local files only.** A connector attached inside a vendor account,
+   an agent running in a cloud workspace, or anything else that leaves nothing
+   on this disk is invisible to it. It makes no network calls, so it cannot go
+   and ask.
+4. **Catalogue matching is only as fresh as the binary.** The snapshot ships
+   inside the release.
+5. **It only finds paths somebody has told it about.** There is no registry of
+   agent configuration. Every path in the tool came from a vendor's
+   documentation or from a real install, and clients change. A path that is
+   wrong finds nothing and says nothing, which looks exactly like a clean
+   machine.
+6. **It reports what a configuration declares, not what code does.** An
+   extension that declares nothing can still shell out at runtime.
+7. **It cannot see whether a browser extension is switched on**, because that
+   state lives in browser databases it deliberately does not open.
+
+Every run prints its own blind spots in a section headed "What this did not look
+at", so the limitations are in front of you at the moment they matter rather
+than in a file you would have to go and find.
+[docs/DETECTIONS.md](docs/DETECTIONS.md) is the standing version, per detector.
+
+## Install
+
+No release has been published yet. When one is, these are the paths, in the
+order we would suggest.
+
+**1. Homebrew**
+
+```sh
+brew install Northbeams-Labs/tap/agentsurface
+```
+
+**2. Go**
+
+```sh
+go install github.com/Northbeams-Labs/agentsurface/cmd/agentsurface@latest
+```
+
+Requires Go 1.26 or newer. The Go toolchain checks what it downloads against
+`go.sum` and the public checksum database, which proves you got the same bytes
+as everyone else. It does not prove the bytes are safe. Nothing does that except
+reading them.
+
+**3. Signed binaries from GitHub Releases**
+
+Download the archive for your platform from the
+[releases page](https://github.com/Northbeams-Labs/agentsurface/releases), then
+verify it before you run it. [docs/VERIFY.md](docs/VERIFY.md) has
+copy-pasteable commands for the checksums, the cosign signature over them, and
+the build provenance attestation, plus how to rebuild the binary from source and
+confirm you get the same bytes.
+
+macOS and Linux binaries are published. There is no Windows binary yet; the
+reason is in the comment at the top of [`.goreleaser.yaml`](.goreleaser.yaml).
+CI compiles the Windows build on every push so the code does not rot.
+
+**From source**
+
+```sh
+git clone https://github.com/Northbeams-Labs/agentsurface
+cd agentsurface
+make build      # writes ./bin/agentsurface
+make verify     # runs the no-network check yourself
+```
+
+## Use
+
+```sh
+agentsurface                  # readable summary
+agentsurface --json           # machine-readable
+agentsurface --no-baseline    # do not read or write the local drift baseline
+agentsurface --version
+```
+
+## What the output looks like
+
+An example, with the paths and names changed:
+
+```
+agentsurface v0.1.0  darwin
+4 items found across 3 categories
+
+AI browser extensions (1)
+  Example Assistant                Google Chrome, example.com, can reach: browser_tabs clipboard, not in catalogue
+                                   ~/Library/Application Support/Google/Chrome/Default/Extensions/abcdefghijklmnop/2.4.1_0/manifest.json
+                                   note: matched on declared permissions, not on code
+
+Instruction files (1)
+  AGENTS.md                        agents.md clients, not in catalogue
+                                   ~/code/checkout-service/AGENTS.md
+
+Model context protocol servers (2)
+  filesystem                       Claude Desktop, can reach: shell filesystem
+                                   ~/Library/Application Support/Claude/claude_desktop_config.json
+  internal-deploy-tools            Cursor, can reach: shell network, not in catalogue
+                                   ~/code/checkout-service/.cursor/mcp.json
+                                   note: declared in the repository, not by this user
+
+Changed since the last run (1)
+  internal-deploy-tools            ~/code/checkout-service/.cursor/mcp.json
+
+Could not read (1)
+  browsers: ~/Library/Application Support/Firefox/Profiles permission denied
+
+What this did not look at
+  browser extensions: classification: extensions are judged on what they declare, not on what their code does
+  remote and cloud hosted servers: a server connected inside a vendor account leaves nothing on this disk
+  running processes: this reads configuration files only
+
+This tool inventories what is installed. It does not judge whether any of it is safe.
+```
+
+Three parts of that are worth pointing out.
+
+The **second line of each item is the path**, so you can go and read the file
+yourself rather than believing the summary.
+
+**"Could not read"** is not noise. A permission error means part of the machine
+was not inventoried, and the run says so instead of quietly returning a smaller
+number.
+
+**"What this did not look at"** prints on every run, including runs that went
+perfectly. It is how you tell "nothing is installed" apart from "nothing was
+looked at".
+
+[docs/OUTPUT.md](docs/OUTPUT.md) documents both formats, including every field
+of the JSON.
+
+## Drift
+
+When a run finishes, `agentsurface` writes a hash for each item it found to
+`~/.config/agentsurface/baseline.json`. A later run compares against it and
+reports anything whose declared definition changed. That covers the case where a
+tool you already approved was quietly redefined underneath you.
+
+The file holds hashes and the paths they belong to. It never holds file
+contents, and it never leaves the machine. Delete it whenever you like, or pass
+`--no-baseline` to neither read nor write it. See [PRIVACY.md](PRIVACY.md).
+
+## What it reads on your machine
+
+Local configuration belonging to AI agent tooling: client configuration files,
+extension and plugin directories, skill and connector definitions, instruction
+files, and browser extension and native messaging host manifests. Plus any
+project directory you point it at, a few levels down, for configuration a
+repository carries with it.
+
+[docs/DETECTIONS.md](docs/DETECTIONS.md) lists the paths per detector, and the
+gaps alongside them.
+
+## Documentation
+
+| | |
+|---|---|
+| [docs/DETECTIONS.md](docs/DETECTIONS.md) | What each detector reads, and what it misses |
+| [docs/OUTPUT.md](docs/OUTPUT.md) | The text and JSON output shapes |
+| [docs/VERIFY.md](docs/VERIFY.md) | How to verify a release, and how to reproduce the build |
+| [PRIVACY.md](PRIVACY.md) | What is stored, where, and how to switch it off |
+| [SECURITY.md](SECURITY.md) | Reporting a vulnerability, and what we commit to |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | DCO sign-off, running the tests, adding a detector |
+| [SUPPORT.md](SUPPORT.md) | Where to take a question |
+
+## Contributing
+
+Bug reports and missed detections are the most useful thing this project
+receives. Contributions use Developer Certificate of Origin sign-off
+(`git commit -s`) and there is no contributor licence agreement. One person
+reviews. [CONTRIBUTING.md](CONTRIBUTING.md) has the detail, including the list
+of things that are settled decisions rather than open questions.
+
+## Licence
+
+Apache License 2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE). The licence
+grants no rights to the names or logos; see [TRADEMARK.md](TRADEMARK.md).
+
+---
+
+agentsurface is published by Northbeams Labs, the research imprint of Northbeams.
+<https://labs.northbeams.com>

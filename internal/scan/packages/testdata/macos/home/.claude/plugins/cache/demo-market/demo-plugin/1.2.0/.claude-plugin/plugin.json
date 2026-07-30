@@ -1,0 +1,12 @@
+{
+  "name": "demo-plugin",
+  "version": "1.2.0",
+  "description": "A demo plugin.",
+  "author": {
+    "name": "Demo Author",
+    "url": "https://example.com"
+  },
+  "skills": [
+    "./skills/engineering/tdd"
+  ]
+}

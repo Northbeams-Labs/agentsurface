@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "repo-remote": {
+      "type": "sse",
+      "url": "https://repo.example.com/sse",
+      "env": {
+        "TOKEN": "SECRET-MUST-NOT-APPEAR"
+      }
+    },
+    "repo-local": {
+      "command": "node",
+      "args": [
+        "server.js"
+      ]
+    }
+  }
+}

@@ -1,0 +1,2 @@
+[Service]
+ExecStart=/usr/bin/rsync -a /src /dst

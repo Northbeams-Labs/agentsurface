@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.example.codex</string>
+    <key>Program</key>
+    <string>/opt/homebrew/bin/codex</string>
+    <key>StartInterval</key>
+    <integer>3600</integer>
+</dict>
+</plist>

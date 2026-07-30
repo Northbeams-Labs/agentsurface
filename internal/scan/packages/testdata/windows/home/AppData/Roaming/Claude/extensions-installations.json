@@ -1,0 +1,12 @@
+{
+  "extensions": {
+    "com.example.winext": {
+      "id": "com.example.winext",
+      "version": "3.0.0",
+      "signatureInfo": {
+        "status": "self-signed"
+      },
+      "source": "sideload"
+    }
+  }
+}

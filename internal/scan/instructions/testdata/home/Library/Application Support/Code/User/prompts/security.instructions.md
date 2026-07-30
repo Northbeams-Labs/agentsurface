@@ -1,0 +1,4 @@
+---
+applyTo: "**"
+---
+Flag hardcoded secrets.

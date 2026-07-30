@@ -44,10 +44,10 @@ jobs:
           results_format: sarif
           # publish_results uploads to the public OpenSSF dataset, which is what
           # backs the Scorecard badge. It only works on a public repository.
-          # This repository is private, so it stays false. Turn it on in the
-          # same change that makes the repository public, and add the badge to
-          # README.md then, not before.
-          publish_results: false
+          # Switched on 2026-07-30, in the change that made the repository
+          # public. The badge goes in README.md once a run has actually
+          # published a score, not before.
+          publish_results: true
 
       - name: Keep the SARIF file
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -408,6 +409,14 @@ func TestNewUsesRealRoot(t *testing.T) {
 }
 
 func TestUnreadableProfileBecomesScanError(t *testing.T) {
+	// See the note on the same skip in the instructions package: os.Chmod does
+	// not make a directory unlistable on Windows, so this cannot be simulated
+	// there without an ACL API. The assertion also matches on the text
+	// "permission denied", which is the Unix wording; Windows says "Access is
+	// denied." Skipped rather than made to pass on a weaker assertion.
+	if runtime.GOOS == "windows" {
+		t.Skip("Windows permissions are ACL-based; os.Chmod cannot make a directory unlistable")
+	}
 	if os.Geteuid() == 0 {
 		t.Skip("root can read anything")
 	}

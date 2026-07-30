@@ -2,9 +2,11 @@ package mcpservers
 
 import (
 	"encoding/json"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"reflect"
+	"runtime"
 	"sort"
 	"strings"
 	"testing"
@@ -309,11 +311,54 @@ func summarise(findings []model.Finding) string {
 	return b.String()
 }
 
-func TestProjectScope(t *testing.T) {
-	root, err := filepath.Abs(filepath.Join("testdata", "project", "repo"))
+// projectRepo materialises the project fixture in a temporary directory.
+//
+// It exists for one entry in that fixture: a .mcp.json inside a .git
+// directory, which the walk must never reach. Git refuses to track anything
+// under a path component named .git, so a checked-in .git/.mcp.json is not a
+// negative control at all, it is a file that only ever exists on the machine of
+// whoever wrote it. On CI the directory was simply absent and the assertion
+// passed by having nothing to find. The fixture is stored as dot-git and given
+// its real name here, so the check means the same thing everywhere.
+func projectRepo(t *testing.T) string {
+	t.Helper()
+	src, err := filepath.Abs(filepath.Join("testdata", "project", "repo"))
 	if err != nil {
 		t.Fatal(err)
 	}
+	dst := t.TempDir()
+	err = filepath.WalkDir(src, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		rel, err := filepath.Rel(src, path)
+		if err != nil {
+			return err
+		}
+		if rel == "." {
+			return nil
+		}
+		target := filepath.Join(dst, strings.Replace(rel, "dot-git", ".git", 1))
+		if d.IsDir() {
+			return os.MkdirAll(target, 0o755)
+		}
+		b, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		return os.WriteFile(target, b, 0o600)
+	})
+	if err != nil {
+		t.Fatalf("building the project fixture: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(dst, ".git", ".mcp.json")); err != nil {
+		t.Fatalf("the .git negative control is missing, so this test would assert nothing: %v", err)
+	}
+	return dst
+}
+
+func TestProjectScope(t *testing.T) {
+	root := projectRepo(t)
 	env := model.Env{
 		OS:      "darwin",
 		HomeDir: filepath.Join("testdata", "empty"),
@@ -369,6 +414,42 @@ func TestProjectScopeDoesNotFollowSymlinksOutOfRoot(t *testing.T) {
 	}
 }
 
+// TestProjectScopeUnderASymlinkedRoot is the other half of the symlink guard.
+// Refusing to read outside the root is only correct if the root itself can be
+// reached through a symlink, which on macOS is the ordinary case: /tmp and /var
+// are both symlinks, so a repository checked out under either produced an
+// inventory with nothing project scoped in it and no error to say why.
+func TestProjectScopeUnderASymlinkedRoot(t *testing.T) {
+	real := t.TempDir()
+	repo := filepath.Join(real, "repo")
+	if err := os.MkdirAll(repo, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(repo, ".mcp.json"),
+		[]byte(`{"mcpServers":{"under-a-symlink":{"command":"uvx","args":["x"]}}}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	link := filepath.Join(t.TempDir(), "link")
+	if err := os.Symlink(real, link); err != nil {
+		t.Skipf("symlinks unavailable: %v", err)
+	}
+
+	env := model.Env{
+		OS:      "darwin",
+		HomeDir: filepath.Join("testdata", "empty"),
+		Roots:   []string{filepath.Join(link, "repo")},
+	}
+	findings, _, errs := New().Scan(env)
+	if len(errs) != 0 {
+		t.Fatalf("unexpected scan errors: %+v", errs)
+	}
+	if len(findings) != 1 || findings[0].Name != "under-a-symlink" {
+		t.Fatalf("a root reached through a symlink produced %d findings, want the one config in it:%s",
+			len(findings), summarise(findings))
+	}
+}
+
 func TestMalformedConfigBecomesAScanError(t *testing.T) {
 	findings, gaps, errs := scanFixture(t, "malformed", "darwin")
 	if len(findings) != 0 {
@@ -392,6 +473,13 @@ func TestMalformedConfigBecomesAScanError(t *testing.T) {
 }
 
 func TestUnreadableConfigBecomesAScanError(t *testing.T) {
+	// The 0o000 mode passed to WriteFile is ignored on Windows, where
+	// permissions are ACLs and the file stays readable. There is no dependency
+	// free way to deny an ACE from a Go test, so this is skipped rather than
+	// left asserting nothing.
+	if runtime.GOOS == "windows" {
+		t.Skip("Windows permissions are ACL-based; a 0o000 file mode does not stop a read")
+	}
 	if os.Geteuid() == 0 {
 		t.Skip("running as root, which can read a mode 0000 file")
 	}

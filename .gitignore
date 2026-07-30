@@ -1,8 +1,12 @@
-# Build output
+# Build output. These are anchored with a leading slash on purpose: an
+# unanchored "agentsurface" matches at every level, so it excluded the whole
+# cmd/agentsurface/ directory and quietly kept baseline_test.go out of the
+# repository. Git will not descend into an excluded directory, so no negation
+# further down this file can rescue a file underneath one.
 /bin/
 /dist/
-agentsurface
-agentsurface.exe
+/agentsurface
+/agentsurface.exe
 
 # Go build and test artefacts
 *.exe

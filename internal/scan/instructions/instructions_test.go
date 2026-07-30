@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -322,6 +323,16 @@ func TestMissingRootIsReportedNotFatal(t *testing.T) {
 }
 
 func TestUnreadableFileIsReportedNotFatal(t *testing.T) {
+	// os.Chmod is the only portable way to lock a file, and on Windows it is
+	// close to a no-op: permissions there are ACLs, and Chmod only flips the
+	// read-only attribute, which does not stop a read. The file stayed readable,
+	// the scanner correctly read it, and the test failed for reasons that had
+	// nothing to do with the behaviour under test. Denying an ACE would need
+	// icacls or golang.org/x/sys/windows, and this repository has no
+	// dependencies. Skipped honestly rather than asserted vacuously.
+	if runtime.GOOS == "windows" {
+		t.Skip("Windows permissions are ACL-based; os.Chmod cannot make a file unreadable")
+	}
 	if os.Geteuid() == 0 {
 		t.Skip("root can read anything")
 	}

@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -394,6 +395,14 @@ func TestBundleOnDisk(t *testing.T) {
 // TestUnreadableDirectory covers permission denied, which must be reported
 // rather than silently turning into an empty inventory.
 func TestUnreadableDirectory(t *testing.T) {
+	// os.Chmod cannot make a directory unlistable on Windows, where permissions
+	// are ACLs and Chmod only touches the read-only attribute. The directory
+	// stayed readable, so the scanner had nothing to report and the test failed
+	// on the simulation rather than on the behaviour. Skipped honestly; the Unix
+	// runs still cover the code path.
+	if runtime.GOOS == "windows" {
+		t.Skip("Windows permissions are ACL-based; os.Chmod cannot make a directory unlistable")
+	}
 	if os.Geteuid() == 0 {
 		t.Skip("running as root, which can read anything")
 	}
@@ -408,7 +417,7 @@ func TestUnreadableDirectory(t *testing.T) {
 	t.Cleanup(func() { _ = os.Chmod(skills, 0o755) })
 
 	_, _, errs := scanner{}.Scan(model.Env{OS: "darwin", HomeDir: home})
-	if !anyError(errs, ".claude/skills") {
+	if !anyError(errs, filepath.Join(".claude", "skills")) {
 		t.Errorf("an unreadable directory must be reported, got %v", errs)
 	}
 }
@@ -581,6 +590,13 @@ func copyTree(t *testing.T, src, dst string) {
 	}
 }
 
+// substitute rewrites the path placeholders in a JSON fixture to point at the
+// temporary copy. The replacement is JSON encoded rather than pasted in raw:
+// a Windows path is full of backslashes, and a raw C:\Users\... dropped into a
+// JSON string is an invalid escape sequence. Splicing it in unescaped left
+// installed_plugins.json unparseable on Windows, so the scanner found no
+// plugins and no plugin skills at all while every assertion still passed on
+// Linux and macOS.
 func substitute(t *testing.T, path string, replacements map[string]string) {
 	t.Helper()
 	b, err := os.ReadFile(path)
@@ -589,11 +605,25 @@ func substitute(t *testing.T, path string, replacements map[string]string) {
 	}
 	text := string(b)
 	for from, to := range replacements {
-		text = strings.ReplaceAll(text, from, to)
+		text = strings.ReplaceAll(text, from, jsonStringBody(t, to))
+	}
+	if !json.Valid([]byte(text)) {
+		t.Fatalf("substitution left %s invalid JSON:\n%s", path, text)
 	}
 	if err := os.WriteFile(path, []byte(text), 0o600); err != nil {
 		t.Fatal(err)
 	}
+}
+
+// jsonStringBody returns s encoded as JSON with the surrounding quotes removed,
+// so it can be dropped into a quoted placeholder inside a fixture.
+func jsonStringBody(t *testing.T, s string) string {
+	t.Helper()
+	b, err := json.Marshal(s)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return string(b[1 : len(b)-1])
 }
 
 func lookup(findings []model.Finding, kind model.Kind, name string) *model.Finding {

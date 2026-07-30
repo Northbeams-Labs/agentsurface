@@ -174,14 +174,28 @@ func globUnder(dir, rel string) []string {
 
 // insideRoot is the symlink guard: a config file that resolves outside the root
 // it was found in is not read.
+//
+// Both sides are resolved, and that is the whole point. Resolving only the root
+// compares a real path against a path that still has symlinks in it, and every
+// file under the root then looks like it is somewhere else entirely. A root
+// under /tmp on macOS is enough to trigger it, because /tmp is a symlink to
+// /private/tmp: the scanner walked the directory, found the config, and threw
+// every finding away without saying so.
 func insideRoot(root, path string) bool {
-	realRoot, err := filepath.EvalSymlinks(root)
-	if err != nil {
-		realRoot = root
-	}
-	rel, err := filepath.Rel(realRoot, path)
+	rel, err := filepath.Rel(resolved(root), resolved(path))
 	if err != nil {
 		return false
 	}
 	return rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator))
+}
+
+// resolved returns p with the symlinks in it followed, or p unchanged when it
+// cannot be resolved. A path that will not resolve is a broken symlink or a
+// file that has just gone, and leaving it unresolved makes the comparison
+// above reject it, which is the safe direction.
+func resolved(p string) string {
+	if real, err := filepath.EvalSymlinks(p); err == nil {
+		return real
+	}
+	return p
 }

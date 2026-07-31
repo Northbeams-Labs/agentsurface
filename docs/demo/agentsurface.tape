@@ -5,8 +5,11 @@
 # by docs/demo/fixture.sh, so what is inventoried is that invented machine and
 # not this one.
 #
-# The output is longer than a terminal, so the recording pages through it with
-# less. That is how you would read it yourself.
+# It is the default summary, which counts the notes rather than printing them.
+# The inventory itself now fits on one screen; what runs past it is the blind
+# spots section, which is long by design. So the recording still pages through
+# with less, which is how you would read it yourself, and the still is page one.
+# Recording -verbose instead would page for about a minute.
 
 Output docs/demo/agentsurface.gif
 
@@ -47,20 +50,17 @@ Type "agentsurface | less"
 Sleep 700ms
 Enter
 
-# The summary line, the browser extension, the native messaging host, the
-# desktop extensions.
-Sleep 5s
+# Page one is the whole inventory: the count, every category, and the count of
+# notes the default held back. On this fixture it fits, which is the point of
+# the compact default and is why this is the still.
+Sleep 7s
 Screenshot docs/demo/agentsurface.png
-Sleep 2s
+Sleep 3s
 
-# The rest of the extensions, the instruction files and their notes.
+# What the run could not read, and the start of the blind spots.
 PageDown
 Sleep 6s
 
-# MCP servers, skills, and what the run could not read.
-PageDown
-Sleep 6s
-
-# What this did not look at, which prints on every run.
+# The rest of "What this did not look at", which prints on every run.
 PageDown
 Sleep 7s

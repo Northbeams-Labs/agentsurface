@@ -28,7 +28,6 @@ agentsurface v0.1.0  darwin
 AI browser extensions (1)
   Example Assistant                Google Chrome, example.com, can reach: browser_tabs clipboard, not in catalogue
                                    ~/Library/Application Support/Google/Chrome/Default/Extensions/abcdefghijklmnop/2.4.1_0/manifest.json
-                                   note: matched on declared permissions, not on code
 
 Instruction files (1)
   AGENTS.md                        agents.md clients, not in catalogue
@@ -39,7 +38,8 @@ Model context protocol servers (2)
                                    ~/Library/Application Support/Claude/claude_desktop_config.json
   internal-deploy-tools            Cursor, can reach: shell network, not in catalogue
                                    ~/code/checkout-service/.cursor/mcp.json
-                                   note: declared in the repository, not by this user
+
+6 notes about what these items declare are not shown. Run with -verbose for them.
 
 Changed since the last run (1)
   internal-deploy-tools            ~/code/checkout-service/.cursor/mcp.json
@@ -68,7 +68,10 @@ Reading it:
   catalogue snapshot has no entry for it. Any of those parts can be absent.
 - **Second line:** the exact path the item was found at, so you can go and read
   it yourself. This is the most useful line on the page.
-- **`note:` lines:** plain observations. They are never verdicts.
+- **`note:` lines:** plain observations, never verdicts. They are printed only
+  under `-verbose`. The default prints one line saying how many it held back,
+  because a laptop with real agent tooling on it produces hundreds of notes and
+  a summary nobody reaches the end of hides its own counts.
 - **Changed since the last run:** items whose declared definition differs from
   the previous run on this machine. Absent when there is no baseline or nothing
   changed.

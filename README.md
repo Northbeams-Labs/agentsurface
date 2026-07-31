@@ -72,8 +72,9 @@ than in a file you would have to go and find.
 
 ## Install
 
-No release has been published yet. When one is, these are the paths, in the
-order we would suggest.
+Version 0.1.0 is released, for macOS and Linux. There is no Windows build
+yet, and [docs/VERIFY.md](docs/VERIFY.md) is how you check that what you
+downloaded is what this repository's release workflow built.
 
 **1. Homebrew**
 

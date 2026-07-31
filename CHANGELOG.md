@@ -30,9 +30,5 @@ Nothing yet.
 - Release pipeline producing macOS and Linux binaries with checksums, a
   cosign signature, an SBOM and a build provenance attestation.
 
-### Notes
-
-- No release has been published yet, so there are no version headings below
-  this one.
-
-[Unreleased]: https://github.com/Northbeams-Labs/agentsurface/commits/main
+[Unreleased]: https://github.com/Northbeams-Labs/agentsurface/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/Northbeams-Labs/agentsurface/releases/tag/v0.1.0

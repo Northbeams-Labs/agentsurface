@@ -9,6 +9,10 @@ Entries are written at release time. Pull requests should not edit this file.
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [0.1.0] - 2026-07-31
+
 ### Added
 
 - Shared inventory vocabulary in `internal/model`: findings, kinds, scopes,

@@ -85,9 +85,14 @@ than in a file you would have to go and find.
 
 ## Install
 
-Version 0.1.0 is released, for macOS and Linux. There is no Windows build yet.
+Version 0.1.0 is released, for macOS and Linux.
 [docs/VERIFY.md](docs/VERIFY.md) is how you check that what you downloaded is
 what this repository's release workflow built.
+
+**On Windows**, use the `go install` line below. There is no published Windows
+binary, and the reason is Authenticode signing rather than code: the detectors
+know the Windows paths, and CI compiles the Windows build on every push. See
+[`.goreleaser.yaml`](.goreleaser.yaml) for the whole reason.
 
 **1. Homebrew**
 
@@ -101,7 +106,8 @@ brew install Northbeams-Labs/tap/agentsurface
 go install github.com/Northbeams-Labs/agentsurface/cmd/agentsurface@latest
 ```
 
-Requires Go 1.26 or newer. The Go toolchain checks what it downloads against
+This is the one that works on Windows. Requires Go 1.26 or newer. The Go
+toolchain checks what it downloads against
 `go.sum` and the public checksum database, which proves you got the same bytes
 as everyone else. It does not prove the bytes are safe. Nothing does that except
 reading them.
@@ -115,9 +121,8 @@ copy-pasteable commands for the checksums, the cosign signature over them, and
 the build provenance attestation, plus how to rebuild the binary from source and
 confirm you get the same bytes.
 
-macOS and Linux binaries are published. There is no Windows binary yet; the
-reason is in the comment at the top of [`.goreleaser.yaml`](.goreleaser.yaml).
-CI compiles the Windows build on every push so the code does not rot.
+macOS and Linux binaries are published. There is no Windows archive here, for
+the signing reason above; `go install` is the Windows route.
 
 **From source**
 

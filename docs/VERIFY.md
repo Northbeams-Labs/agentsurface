@@ -63,14 +63,15 @@ gh release download VERSION \
   --pattern 'checksums.txt*'
 
 cosign verify-blob \
-  --certificate checksums.txt.pem \
-  --signature checksums.txt.sig \
+  --bundle checksums.txt.bundle \
   --certificate-identity-regexp '^https://github\.com/Northbeams-Labs/agentsurface/\.github/workflows/release\.yml@refs/tags/' \
   --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
   checksums.txt
 ```
 
-The two `--certificate-*` flags are the whole point. Without them cosign will
+The bundle carries the signature, the signing certificate and the
+transparency log entry in one file. The two `--certificate-*` flags are the
+whole point. Without them cosign will
 confirm that *somebody* signed the file. With them it confirms that the
 signature came from `release.yml` in this repository, running on a tag.
 

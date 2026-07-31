@@ -115,14 +115,18 @@ signs:
   # transparency log. Signing the checksums file rather than each archive means
   # one signature covers every artefact, and the verification steps in
   # docs/VERIFY.md stay short enough that someone might actually run them.
+  #
+  # Note on the flags: cosign now writes a single Sigstore bundle by default and
+  # ignores --output-signature and --output-certificate. Those older flags do
+  # not merely warn, they fail the release, because the empty default bundle
+  # path is not a file cosign can create. The bundle carries the signature, the
+  # certificate and the transparency log entry together, so it replaces both.
   - id: checksums
     cmd: cosign
-    signature: "${artifact}.sig"
-    certificate: "${artifact}.pem"
+    signature: "${artifact}.bundle"
     args:
       - sign-blob
-      - "--output-signature=${signature}"
-      - "--output-certificate=${certificate}"
+      - "--bundle=${signature}"
       - "${artifact}"
       - "--yes"
     artifacts: checksum

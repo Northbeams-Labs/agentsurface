@@ -21,12 +21,21 @@ func render(t *testing.T, r model.Result) []string {
 	return strings.Split(strings.TrimRight(buf.String(), "\n"), "\n")
 }
 
+// renderVerbose is the same for the summary that prints every note. The
+// layout tests use it, because the notes are what the layout has to hold.
+func renderVerbose(t *testing.T, r model.Result) []string {
+	t.Helper()
+	var buf bytes.Buffer
+	TextVerbose(&buf, r)
+	return strings.Split(strings.TrimRight(buf.String(), "\n"), "\n")
+}
+
 func oneFinding(f model.Finding) model.Result {
 	return model.Result{Tool: "agentsurface", Version: "v0.1.0", OS: "darwin", Findings: []model.Finding{f}}
 }
 
 func TestLongNoteWrapsWithTheContinuationAligned(t *testing.T) {
-	lines := render(t, oneFinding(model.Finding{
+	lines := renderVerbose(t, oneFinding(model.Finding{
 		Kind:   model.KindConnector,
 		Name:   "com.example.agent",
 		Client: "Google Chrome",
@@ -64,6 +73,35 @@ func TestLongNoteWrapsWithTheContinuationAligned(t *testing.T) {
 		if len([]rune(l)) > textWidth {
 			t.Errorf("wrapped line is %d runes wide, wider than %d: %q", len([]rune(l)), textWidth, l)
 		}
+	}
+}
+
+// The compact default is only defensible if it says what it held back. A
+// summary that silently drops the evidence reads as a machine with less on it
+// than it has.
+func TestDefaultHoldsNotesBackAndSaysHowMany(t *testing.T) {
+	r := oneFinding(model.Finding{
+		Kind:   model.KindConnector,
+		Name:   "com.example.agent",
+		Client: "Google Chrome",
+		Source: "/tmp/fixture/host.json",
+		Notes:  []string{longNote, "transport declared as stdio"},
+	})
+
+	out := strings.Join(render(t, r), "\n")
+
+	if strings.Contains(out, "note: ") {
+		t.Errorf("the default printed a note:\n%s", out)
+	}
+	if !strings.Contains(out, "/tmp/fixture/host.json") {
+		t.Errorf("the default dropped the path, which is the part you go and read:\n%s", out)
+	}
+	if !strings.Contains(out, "2 notes") || !strings.Contains(out, "-verbose") {
+		t.Errorf("the default did not say it held 2 notes back, or how to see them:\n%s", out)
+	}
+
+	if verbose := strings.Join(renderVerbose(t, r), "\n"); !strings.Contains(verbose, longNote[:40]) {
+		t.Errorf("-verbose did not print the note:\n%s", verbose)
 	}
 }
 

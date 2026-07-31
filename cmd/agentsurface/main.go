@@ -25,6 +25,7 @@ var version = "dev"
 
 func main() {
 	asJSON := flag.Bool("json", false, "print the inventory as JSON")
+	verbose := flag.Bool("verbose", false, "print the notes recording what each item declares")
 	noBaseline := flag.Bool("no-baseline", false, "do not read or write the local drift baseline")
 	showVersion := flag.Bool("version", false, "print the version and exit")
 	flag.Parse()
@@ -71,6 +72,10 @@ func main() {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(2)
 		}
+		return
+	}
+	if *verbose {
+		render.TextVerbose(os.Stdout, result)
 		return
 	}
 	render.Text(os.Stdout, result)

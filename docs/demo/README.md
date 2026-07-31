@@ -2,11 +2,12 @@
 
 ![agentsurface listing the agent machinery on a fixture machine](agentsurface.gif)
 
-`agentsurface.gif` is one real run of the binary, 29 seconds, paged through with
-`less` because the output is four screens long. It shows the command, the
-summary line, the inventory, and the "What this did not look at" section that
-prints on every run. `agentsurface.png` is a still of the first page, for
-directories that want one.
+`agentsurface.gif` is one real run of the binary, paged through with `less`
+because the output is three screens long. Page one is the whole inventory: the
+summary line and every category, which is what the compact default is for. The
+two pages after it are what the run could not read and the "What this did not
+look at" section that prints on every run. `agentsurface.png` is a still of page
+one, for directories that want one.
 
 Nothing is edited. Every character on screen was printed by the binary.
 

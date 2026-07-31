@@ -1,69 +1,82 @@
 # agentsurface
 
-A command-line tool that inventories the AI agent machinery installed on your
-own machine.
+**What AI agent machinery is installed on this machine, and who put it there.**
 
-It reads local configuration and lists what it finds: model context protocol
-servers across every client it knows, desktop extensions, plugins, skills,
-connectors, scheduled agent tasks, instruction files, and AI-aware browser
-extensions. It records where each item came from, who published it according to
-its own manifest, and what its declared configuration says it can reach.
+```sh
+brew install Northbeams-Labs/tap/agentsurface
+agentsurface
+```
 
-It answers one question: **what agent machinery is actually on this machine, and
-who put it there.**
+![agentsurface listing the agent machinery on a fixture machine](docs/demo/agentsurface.gif)
+
+<sub>One real run, unedited. The machine it reads is
+[invented on purpose](docs/demo/README.md), because a recording of a real one
+would publish somebody's laptop. On a working laptop the counts are higher:
+92 items across 7 categories on the one this was built on.</sub>
+
+One command, and no account, no network call, and nothing uploaded. It reads
+local configuration and lists what it finds: model context protocol servers
+across every client it knows, desktop extensions, plugins, skills, connectors,
+scheduled agent tasks, instruction files, and AI-aware browser extensions. For
+each one it records where it came from, who published it according to its own
+manifest, and what its declared configuration says it can reach.
+
+The count is usually higher than expected, and the reason is structural rather
+than anybody's fault. Agent tooling arrives one approval at a time, from a
+client install, from a repository that carries its own configuration, from a
+plugin that pulled in others, and nothing on the machine has ever added it up.
 
 It reads. It does not judge, and it does not act.
+
+Other installs: [Go, signed binaries, and from source](#install).
 
 ## What it refuses to do
 
 These are enforced or settled, not aspirations.
 
-- **No network calls of any kind.** Not for telemetry, version checks,
-  catalogue lookups, crash reports or model calls. This is checked in CI on
-  every push, and a release cannot ship if the check fails. See
-  [PRIVACY.md](PRIVACY.md) and
+- No network calls of any kind. Not for telemetry, version checks, catalogue
+  lookups, crash reports or model calls. CI checks this on every push, and a
+  release cannot ship if the check fails. See [PRIVACY.md](PRIVACY.md) and
   [`.github/workflows/no-network.yml`](.github/workflows/no-network.yml).
-- **No account, no token, no sign-up, no licence key.**
-- **No upload.** Nothing found on your machine leaves your machine.
-- **It never executes anything it finds.** It will read the configuration that
-  says how an MCP server starts. It will not start it. The compiled binary
-  cannot start a process at all: `os/exec` is on the denied list in the same CI
+- No account, no token, no sign-up, no licence key.
+- No upload. Nothing found on your machine leaves your machine.
+- It never executes anything it finds. It will read the configuration that says
+  how an MCP server starts; it will not start it. The compiled binary cannot
+  start a process at all, because `os/exec` is on the denied list in the same CI
   check.
-- **It never opens browsing data.** No history, cookies, local storage, saved
-  passwords or profile identities. Extension manifests and native messaging
-  host manifests only.
-- **No risk score, no grade, no letter rating.** A score would be a claim we
-  could not defend line by line.
-- **It writes one file**, a local baseline of hashes at
-  `~/.config/agentsurface/baseline.json`, which you can switch off with
-  `--no-baseline`.
+- It never opens browsing data. No history, cookies, local storage, saved
+  passwords or profile identities. Extension manifests and native messaging host
+  manifests, and nothing else.
+- No risk score, no grade, no letter rating. A score would be a claim we could
+  not defend line by line.
+- It writes one file, a local baseline of hashes at
+  `~/.config/agentsurface/baseline.json`, and `--no-baseline` switches that off.
 
 ## What this does not do
 
 This section is here rather than at the bottom because it is the part that
 decides whether the tool is any use to you.
 
-1. **It does not tell you whether anything it finds is safe.** It is an
-   inventory. `not in catalogue` means the catalogue snapshot inside the binary
-   has no entry for that item. It does not mean anything is wrong with it.
-2. **It does not detect prompt injection**, and does not attempt to. Where it
+1. It does not tell you whether anything it finds is safe. It is an inventory.
+   `not in catalogue` means the catalogue snapshot inside the binary has no
+   entry for that item. It does not mean anything is wrong with it.
+2. It does not detect prompt injection, and does not attempt to. Where it
    reports that an instruction file contains a particular kind of wording, that
    is an observation about text.
-3. **It reads local files only.** A connector attached inside a vendor account,
-   an agent running in a cloud workspace, or anything else that leaves nothing
-   on this disk is invisible to it. It makes no network calls, so it cannot go
-   and ask.
-4. **Catalogue matching is only as fresh as the binary.** The snapshot ships
-   inside the release.
-5. **It only finds paths somebody has told it about.** There is no registry of
-   agent configuration. Every path in the tool came from a vendor's
-   documentation or from a real install, and clients change. A path that is
-   wrong finds nothing and says nothing, which looks exactly like a clean
-   machine.
-6. **It reports what a configuration declares, not what code does.** An
-   extension that declares nothing can still shell out at runtime.
-7. **It cannot see whether a browser extension is switched on**, because that
-   state lives in browser databases it deliberately does not open.
+3. It reads local files only. A connector attached inside a vendor account, an
+   agent running in a cloud workspace, or anything else that leaves nothing on
+   this disk is invisible to it. It makes no network calls, so it cannot go and
+   ask.
+4. Catalogue matching is only as fresh as the binary. The snapshot ships inside
+   the release.
+5. It only finds paths somebody has told it about. There is no registry of agent
+   configuration. Every path in the tool came from a vendor's documentation or
+   from a real install, and clients change. A path that is wrong finds nothing
+   and says nothing, which looks exactly like a clean machine.
+6. It reports what a configuration declares, not what code does. An extension
+   that declares nothing can still shell out at runtime.
+7. It cannot see whether a browser extension is switched on, because that state
+   lives in browser databases it deliberately does not open.
 
 Every run prints its own blind spots in a section headed "What this did not look
 at", so the limitations are in front of you at the moment they matter rather
@@ -72,9 +85,9 @@ than in a file you would have to go and find.
 
 ## Install
 
-Version 0.1.0 is released, for macOS and Linux. There is no Windows build
-yet, and [docs/VERIFY.md](docs/VERIFY.md) is how you check that what you
-downloaded is what this repository's release workflow built.
+Version 0.1.0 is released, for macOS and Linux. There is no Windows build yet.
+[docs/VERIFY.md](docs/VERIFY.md) is how you check that what you downloaded is
+what this repository's release workflow built.
 
 **1. Homebrew**
 
@@ -119,6 +132,7 @@ make verify     # runs the no-network check yourself
 
 ```sh
 agentsurface                  # readable summary
+agentsurface --verbose        # the same, plus what each item declares
 agentsurface --json           # machine-readable
 agentsurface --no-baseline    # do not read or write the local drift baseline
 agentsurface --version
@@ -135,7 +149,6 @@ agentsurface v0.1.0  darwin
 AI browser extensions (1)
   Example Assistant                Google Chrome, example.com, can reach: browser_tabs clipboard, not in catalogue
                                    ~/Library/Application Support/Google/Chrome/Default/Extensions/abcdefghijklmnop/2.4.1_0/manifest.json
-                                   note: matched on declared permissions, not on code
 
 Instruction files (1)
   AGENTS.md                        agents.md clients, not in catalogue
@@ -146,7 +159,8 @@ Model context protocol servers (2)
                                    ~/Library/Application Support/Claude/claude_desktop_config.json
   internal-deploy-tools            Cursor, can reach: shell network, not in catalogue
                                    ~/code/checkout-service/.cursor/mcp.json
-                                   note: declared in the repository, not by this user
+
+6 notes about what these items declare are not shown. Run with -verbose for them.
 
 Changed since the last run (1)
   internal-deploy-tools            ~/code/checkout-service/.cursor/mcp.json
@@ -162,16 +176,19 @@ What this did not look at
 This tool inventories what is installed. It does not judge whether any of it is safe.
 ```
 
-Three parts of that are worth pointing out.
-
-The **second line of each item is the path**, so you can go and read the file
+The second line of each item is the path, so you can go and read the file
 yourself rather than believing the summary.
 
-**"Could not read"** is not noise. A permission error means part of the machine
-was not inventoried, and the run says so instead of quietly returning a smaller
+`--verbose` prints the notes under each item: the permissions and host access an
+extension declares, the native messaging hosts that name it, why a detector
+reported it at all. On a machine with real agent tooling on it there are
+hundreds of them, which is why the default counts them instead of printing them.
+
+"Could not read" is not noise. A permission error means part of the machine was
+not inventoried, and the run says so instead of quietly returning a smaller
 number.
 
-**"What this did not look at"** prints on every run, including runs that went
+"What this did not look at" prints on every run, including the ones that went
 perfectly. It is how you tell "nothing is installed" apart from "nothing was
 looked at".
 
@@ -214,11 +231,11 @@ gaps alongside them.
 
 ## Contributing
 
-Bug reports and missed detections are the most useful thing this project
-receives. Contributions use Developer Certificate of Origin sign-off
-(`git commit -s`) and there is no contributor licence agreement. One person
-reviews. [CONTRIBUTING.md](CONTRIBUTING.md) has the detail, including the list
-of things that are settled decisions rather than open questions.
+Bug reports and missed detections are the most useful thing this project gets.
+Contributions use Developer Certificate of Origin sign-off (`git commit -s`),
+and there is no contributor licence agreement. One person reviews.
+[CONTRIBUTING.md](CONTRIBUTING.md) has the detail, including the list of things
+that are settled decisions rather than open questions.
 
 ## Licence
 

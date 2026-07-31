@@ -20,7 +20,8 @@ ROOT="$PWD"
 BIN="$ROOT/bin/agentsurface"
 FIXTURE="/tmp/ashome"
 OUT="$(mktemp -t agentsurface-demo-check)"
-trap 'rm -f "$OUT"' EXIT
+VERBOSE_OUT="$(mktemp -t agentsurface-demo-check-verbose)"
+trap 'rm -f "$OUT" "$VERBOSE_OUT"' EXIT
 
 if [ ! -x "$BIN" ]; then
 	echo "build it first: make build" >&2
@@ -38,6 +39,10 @@ run() {
 }
 
 (cd "$FIXTURE/work/orchard-checkout" && HOME="$FIXTURE" run --no-baseline) >"$OUT"
+# The same run with the notes printed. The recording shows the default, but the
+# notes are the evidence behind it, so they are checked here too: a detector
+# that stopped recording one would otherwise fail nothing.
+(cd "$FIXTURE/work/orchard-checkout" && HOME="$FIXTURE" run --no-baseline -verbose) >"$VERBOSE_OUT"
 
 fail=0
 note() {
@@ -58,7 +63,7 @@ for want in \
 	"Fenwold Desk Script" \
 	"applescript" \
 	"Instruction files" \
-	"permission-bypassing flag" \
+	"notes about what these items declare are not shown" \
 	"Model context protocol servers" \
 	"Claude Desktop" \
 	"Cursor" \
@@ -68,6 +73,13 @@ for want in \
 	"Could not read" \
 	"What this did not look at"; do
 	grep -qF "$want" "$OUT" || note "the run no longer prints \"$want\""
+done
+
+# Details that live in the notes, so they are only in the verbose run.
+for want in \
+	"permission-bypassing flag" \
+	"native messaging host"; do
+	grep -qF "$want" "$VERBOSE_OUT" || note "the verbose run no longer prints \"$want\""
 done
 
 # What it must never show. The fixture lives under /tmp, so any other absolute

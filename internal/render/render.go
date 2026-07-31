@@ -46,9 +46,22 @@ var itemIndent = strings.Repeat(" ", 2+nameWidth+1)
 // nameWidth is how much of an item's name the first column holds.
 const nameWidth = 32
 
-// Text writes a readable summary. It states counts, then the items grouped by
-// kind, then drift, then the blind spots.
-func Text(w io.Writer, r model.Result) {
+// Text writes a readable summary: counts, then the items grouped by kind, then
+// drift, then the blind spots. Each item is its description and its path, and
+// the notes recording what it declares are left out.
+//
+// The notes are the evidence, so leaving them out of the default needs a
+// reason. It is this: a machine with real agent tooling on it produces hundreds
+// of them, and a summary nobody reaches the end of hides the counts at the top
+// as effectively as printing nothing would. The default says how many notes it
+// held back and how to see them, so the evidence is one flag away rather than
+// gone.
+func Text(w io.Writer, r model.Result) { text(w, r, false) }
+
+// TextVerbose writes the same summary with every note printed under its item.
+func TextVerbose(w io.Writer, r model.Result) { text(w, r, true) }
+
+func text(w io.Writer, r model.Result, verbose bool) {
 	byKind := map[model.Kind][]model.Finding{}
 	for _, f := range r.Findings {
 		byKind[f.Kind] = append(byKind[f.Kind], f)
@@ -63,6 +76,9 @@ func Text(w io.Writer, r model.Result) {
 	}
 	sort.Slice(kinds, func(i, j int) bool { return kinds[i] < kinds[j] })
 
+	// held counts the notes the compact default did not print, so it can say so.
+	held := 0
+
 	for _, k := range kinds {
 		items := byKind[k]
 		sort.Slice(items, func(i, j int) bool { return items[i].Name < items[j].Name })
@@ -73,11 +89,19 @@ func Text(w io.Writer, r model.Result) {
 			// somebody will copy, and a path broken across two lines is a path
 			// that no longer pastes.
 			fmt.Fprintf(w, "%s%s\n", itemIndent, f.Source)
-			for _, n := range f.Notes {
-				wrapped(w, itemIndent+"note: ", itemIndent+"      ", n)
+			if verbose {
+				for _, n := range f.Notes {
+					wrapped(w, itemIndent+"note: ", itemIndent+"      ", n)
+				}
+				continue
 			}
+			held += len(f.Notes)
 		}
 		fmt.Fprintln(w)
+	}
+
+	if held > 0 {
+		fmt.Fprintf(w, "%d notes about what these items declare are not shown. Run with -verbose for them.\n\n", held)
 	}
 
 	if len(r.Drift) > 0 {

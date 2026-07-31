@@ -53,10 +53,14 @@ Sleep 5s
 Screenshot docs/demo/agentsurface.png
 Sleep 2s
 
-# Instruction files, MCP servers, skills, and what the run could not read.
+# The rest of the extensions, the instruction files and their notes.
 PageDown
-Sleep 7s
+Sleep 6s
+
+# MCP servers, skills, and what the run could not read.
+PageDown
+Sleep 6s
 
 # What this did not look at, which prints on every run.
 PageDown
-Sleep 8s
+Sleep 7s

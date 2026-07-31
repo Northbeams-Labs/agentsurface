@@ -84,7 +84,8 @@ fi
 # path fragment: a fragment would also excuse a finding read out of one of
 # those directories, which is exactly what must never appear.
 leaked="$(grep -E '(^|[[:space:]])/(Library|System|Applications|etc|opt|var|private)' "$OUT" |
-	grep -vE '^  browsers: /[^:]*NativeMessagingHosts open /[^:]*NativeMessagingHosts: operation not permitted$' || true)"
+	grep -vE '^  browsers: /[^:]*NativeMessagingHosts$' |
+	grep -vE '^ +open /[^:]*NativeMessagingHosts: operation not permitted$' || true)"
 if [ -n "$leaked" ]; then
 	note "the run printed an absolute path outside the fixture:"
 	echo "$leaked" >&2

@@ -2,8 +2,8 @@
 
 ![agentsurface listing the agent machinery on a fixture machine](agentsurface.gif)
 
-`agentsurface.gif` is one real run of the binary, 25 seconds, paged through with
-`less` because the output is longer than a terminal. It shows the command, the
+`agentsurface.gif` is one real run of the binary, 29 seconds, paged through with
+`less` because the output is four screens long. It shows the command, the
 summary line, the inventory, and the "What this did not look at" section that
 prints on every run. `agentsurface.png` is a still of the first page, for
 directories that want one.

@@ -82,6 +82,18 @@ Reading it:
 that item. It does not mean the item is unknown to the world, and it certainly
 does not mean it is suspect. The snapshot is only as fresh as the release.
 
+**Wrapping.** Prose is wrapped at 100 columns, and a wrapped line is indented to
+line up under the text it continues, so a long note reads as one block instead
+of leaving a word stranded at the left margin. The width is fixed rather than
+read from the terminal, so that a run into a pager and a run into a file produce
+the same bytes.
+
+A path is never broken, because it is the thing you will copy, so the second
+line of an item can be longer than 100 columns. Under "Could not read" the
+scanner and the path stay together on one line for the same reason; the message
+follows on that line when it fits and underneath it, lined up under the path,
+when it does not.
+
 The text format is meant for people. It is not a stable interface, and it will
 change. If you are parsing it, use `--json` instead.
 

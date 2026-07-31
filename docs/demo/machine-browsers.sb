@@ -1,0 +1,34 @@
+;; Sandbox profile used only while recording the demo.
+;;
+;; agentsurface reads two kinds of path: the ones under the home directory,
+;; which the recording redirects to a fixture, and the machine-wide ones, which
+;; are absolute and cannot be redirected. On a real Mac those machine-wide
+;; directories hold real native messaging hosts belonging to real software, and
+;; the recording must not show them.
+;;
+;; So the recording runs with those directories denied. The tool then reports
+;; them under "Could not read", which is exactly what it should do and is the
+;; honest outcome: nothing is hidden from the viewer, and nothing from the
+;; recording machine is shown.
+;;
+;; Only paths that exist produce a denial; a denied path that is not there
+;; still reads as absent, so this profile is safe to use on any Mac.
+
+;; The denials are the exact directories this tool reads, and nothing wider,
+;; because VHS records through a headless Chrome that has its own reasons to
+;; read /Library/Google.
+
+(version 1)
+(allow default)
+(deny file-read*
+      (subpath "/Library/Google/Chrome/NativeMessagingHosts")
+      (subpath "/Library/Google/Chrome Beta/NativeMessagingHosts")
+      (subpath "/Library/Google/Chrome Canary/NativeMessagingHosts")
+      (subpath "/Library/Microsoft/Edge/NativeMessagingHosts")
+      (subpath "/Library/Application Support/Mozilla/NativeMessagingHosts")
+      (subpath "/Library/Application Support/Chromium/NativeMessagingHosts")
+      (subpath "/Library/Application Support/BraveSoftware/Brave-Browser/NativeMessagingHosts")
+      (subpath "/Library/Application Support/Vivaldi/NativeMessagingHosts")
+      (subpath "/Library/Application Support/com.operasoftware.Opera/NativeMessagingHosts")
+      (subpath "/Library/Application Support/com.operasoftware.OperaGX/NativeMessagingHosts")
+      (subpath "/Library/Application Support/Arc/User Data/NativeMessagingHosts"))

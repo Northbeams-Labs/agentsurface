@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "agentsurface",
+  "displayName": "agentsurface",
+  "version": "0.1.0",
+  "description": "Inventory the AI agent machinery installed on this machine: MCP servers across every client it knows, desktop extensions, plugins, skills, connectors, scheduled agent tasks, instruction files and AI browser extensions. Runs the local agentsurface binary, which reads configuration files only. No network call, no account, no upload, no risk score.",
+  "author": {
+    "name": "Northbeams Labs",
+    "url": "https://github.com/Northbeams-Labs"
+  },
+  "homepage": "https://github.com/Northbeams-Labs/agentsurface",
+  "repository": "https://github.com/Northbeams-Labs/agentsurface",
+  "license": "Apache-2.0",
+  "keywords": [
+    "mcp",
+    "inventory",
+    "security",
+    "ai-agents",
+    "skills",
+    "plugins",
+    "browser-extensions",
+    "cli"
+  ]
+}

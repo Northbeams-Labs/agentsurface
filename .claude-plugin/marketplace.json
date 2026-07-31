@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "northbeams-labs",
+  "description": "Claude Code plugins published by Northbeams Labs. One entry today: agentsurface, which inventories the agent machinery installed on a machine.",
+  "owner": {
+    "name": "Northbeams Labs",
+    "url": "https://github.com/Northbeams-Labs"
+  },
+  "plugins": [
+    {
+      "name": "agentsurface",
+      "source": "./plugin/agentsurface",
+      "displayName": "agentsurface",
+      "description": "Inventory the AI agent machinery installed on this machine: MCP servers across every client it knows, desktop extensions, plugins, skills, connectors, scheduled agent tasks, instruction files and AI browser extensions. Runs the local agentsurface binary, which reads configuration files only. No network call, no account, no upload, no risk score.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Northbeams Labs",
+        "url": "https://github.com/Northbeams-Labs"
+      },
+      "homepage": "https://github.com/Northbeams-Labs/agentsurface",
+      "repository": "https://github.com/Northbeams-Labs/agentsurface",
+      "license": "Apache-2.0",
+      "category": "security",
+      "keywords": [
+        "mcp",
+        "inventory",
+        "security",
+        "ai-agents",
+        "skills",
+        "plugins",
+        "browser-extensions",
+        "cli"
+      ],
+      "tags": [
+        "mcp",
+        "inventory",
+        "security",
+        "ai-agents"
+      ]
+    }
+  ]
+}

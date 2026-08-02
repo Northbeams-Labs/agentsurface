@@ -14,6 +14,10 @@ prove:
    [there is no network code in them](#5-check-for-network-code) (reproducible
    build, and reading the binary's own symbol table).
 
+On Windows there is a fifth: the binary is
+[Authenticode signed](#windows-authenticode), so the operating system checks it
+for you before it runs.
+
 An honest note before the commands: almost nobody runs these. That is fine. Part
 of the value of this page is that a sceptic can see the steps exist and would
 work.
@@ -237,15 +241,36 @@ taking our word for it.
 
 ---
 
-## Signing that is deliberately not here
+## Windows: Authenticode
 
-**Windows.** There is no Windows release artefact, so there is no Authenticode
-signature to check. The reason is in the comment at the top of `.goreleaser.yaml`:
-an unsigned Windows download makes SmartScreen warn about it, and a security
-tool that makes the operating system warn about it is a worse trust story than
-one that is honest about not shipping a Windows build yet. Signing costs money,
-so it is a spending decision rather than a build task. CI compiles the Windows
-binary on every push so that the code does not rot in the meantime.
+The Windows binary is Authenticode signed, so Windows itself will tell you who
+signed it and whether the file has been altered since. Right click the `.exe`,
+Properties, Digital Signatures. From PowerShell:
+
+```powershell
+Get-AuthenticodeSignature .\agentsurface.exe | Format-List Status, SignerCertificate
+```
+
+`Status` must be `Valid`, and the signer must be Northbeams, Inc.
+
+The signature is applied inside SSL.com's cloud hardware security module during
+the release run. No signing key exists on any machine of ours, so there is no
+signing key of ours to be stolen.
+
+**This is the one artefact that does not reproduce byte for byte.** The
+signature is added after the compiler has finished and it embeds a timestamp, so
+two signings of identical bytes differ. To check the Windows build against
+section 4, compare what is underneath the signature rather than the whole file:
+
+```sh
+# osslsigncode is packaged for Linux and macOS, and it can strip a signature
+osslsigncode remove-signature -in agentsurface.exe -out unsigned.exe
+sha256sum unsigned.exe
+```
+
+That hash is what a local `GOOS=windows` build of the same tag produces.
+
+## Signing that is deliberately not here
 
 **macOS notarisation.** Not yet in place. Until it is, macOS may quarantine a
 downloaded binary and refuse to run it until you approve it in System Settings

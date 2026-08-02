@@ -4,13 +4,19 @@
 #
 # Two decisions in here are deliberate and are explained where they appear:
 #
-#   1. There is no Windows build. See the note above the `builds` section.
+#   1. The Windows binary is Authenticode signed, and the macOS and Linux ones
+#      are not. See the note above the `builds` section.
 #   2. The binaries are not stripped. See the note on `ldflags`.
 #
 # Everything this produces is meant to be checkable by someone who does not
 # trust us: reproducible binaries, a checksums file, a cosign signature over
 # that file, an SBOM per archive, and a build provenance attestation added by
 # the release workflow. docs/VERIFY.md is the reader's side of that.
+#
+# The Authenticode signature is the one thing that breaks byte for byte
+# reproduction, because it is applied after the compiler has finished and it is
+# not deterministic. docs/VERIFY.md says how to check the Windows binary
+# instead: verify the signature, and compare the unsigned bytes underneath it.
 
 version: 2
 
@@ -25,18 +31,18 @@ before:
     - bash .github/scripts/no-network.sh
 
 builds:
-  # macOS and Linux only.
+  # macOS, Linux and Windows.
   #
-  # Windows is deliberately deferred, and the reason is signing rather than
-  # code. Go builds a working windows/amd64 binary today, and CI compiles it on
-  # every push so it does not rot. What is missing is Authenticode signing: an
-  # unsigned Windows download triggers a SmartScreen warning, and a security
-  # tool that makes the operating system warn about it is a worse trust story
-  # than one that is honest about not shipping a Windows build yet. Signing
-  # costs real money (Azure Trusted Signing is billed monthly, traditional
-  # certificates annually), so it is a spending decision, not a build task.
-  # When that decision is taken, add windows to goos here and an Authenticode
-  # step to the release workflow at the same time.
+  # The Windows binary is Authenticode signed by the post hook below, because
+  # an unsigned Windows download triggers a SmartScreen warning and a security
+  # tool the operating system warns about is worse than no download at all. The
+  # signing happens inside SSL.com's cloud HSM: no private key exists on the
+  # build machine, or on any machine of ours.
+  #
+  # The hook is unconditional and the script decides. Without credentials it
+  # warns and leaves the binary unsigned, so a fork or a snapshot build still
+  # works. The release workflow sets REQUIRE_WINDOWS_SIGNING=1 for a real tag,
+  # which turns that warning into a failed release.
   - id: agentsurface
     main: ./cmd/agentsurface
     binary: agentsurface
@@ -45,9 +51,13 @@ builds:
     goos:
       - darwin
       - linux
+      - windows
     goarch:
       - amd64
       - arm64
+    hooks:
+      post:
+        - cmd: bash .github/scripts/sign-windows.sh "{{ .Path }}"
     flags:
       # -trimpath removes the build machine's file paths from the binary, which
       # is the single largest source of non-reproducibility in a Go build.
@@ -87,6 +97,13 @@ archives:
       - agentsurface
     formats:
       - tar.gz
+    # Windows ships a zip, because tar is not something a stock Windows install
+    # can open by double clicking and the first thing a download does should
+    # not be to ask for another download.
+    format_overrides:
+      - goos: windows
+        formats:
+          - zip
     name_template: >-
       {{ .ProjectName }}_{{ .Version }}_
       {{- if eq .Os "darwin" }}macos{{ else }}{{ .Os }}{{ end }}_

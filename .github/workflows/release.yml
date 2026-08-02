@@ -1,9 +1,15 @@
 name: release
 
-# Runs on a version tag. Produces macOS and Linux binaries, a checksums file, a
-# cosign signature over the checksums, an SBOM per artefact, and a GitHub build
-# provenance attestation. There is no Windows artefact yet: see the comment at
-# the top of .goreleaser.yaml.
+# Runs on a version tag. Produces macOS, Linux and Windows binaries, a
+# checksums file, a cosign signature over the checksums, an SBOM per artefact,
+# and a GitHub build provenance attestation.
+#
+# The Windows binary is Authenticode signed through SSL.com's cloud HSM, by
+# .github/scripts/sign-windows.sh, which GoReleaser runs as a post-build hook.
+# Four repository secrets drive it: ESIGNER_USERNAME, ESIGNER_PASSWORD,
+# ESIGNER_CREDENTIAL_ID and ESIGNER_TOTP_SECRET. Without them a dispatch dry
+# run still works and warns; a real tag fails rather than publishing an
+# unsigned Windows download, because REQUIRE_WINDOWS_SIGNING is set below.
 #
 # Nothing here is ever run on a laptop. The whole point of the release being
 # built by CI is that the provenance attestation names a workflow, a repository
@@ -82,6 +88,15 @@ jobs:
           go-version: "1.26.5"
           check-latest: false
 
+      - name: Set up Java
+        # Only for CodeSignTool, which is a Java program. It is the client for
+        # SSL.com's cloud HSM and it is the only thing in this workflow that
+        # needs a JVM.
+        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
+        with:
+          distribution: temurin
+          java-version: "11"
+
       - name: Install cosign
         uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
 
@@ -115,12 +130,25 @@ jobs:
           # bound to this workflow's OIDC identity and recorded in the public
           # Sigstore transparency log.
           COSIGN_YES: "true"
+          # Authenticode signing of the Windows binaries, done inside SSL.com's
+          # cloud HSM by the post-build hook. These four are the same account
+          # that signs the Sentinel installers.
+          ESIGNER_USERNAME: ${{ secrets.ESIGNER_USERNAME }}
+          ESIGNER_PASSWORD: ${{ secrets.ESIGNER_PASSWORD }}
+          ESIGNER_CREDENTIAL_ID: ${{ secrets.ESIGNER_CREDENTIAL_ID }}
+          ESIGNER_TOTP_SECRET: ${{ secrets.ESIGNER_TOTP_SECRET }}
+          # A tag is a real release, so an unsigned Windows binary is a failure
+          # rather than a warning. A workflow_dispatch dry run is allowed to
+          # produce one, which is what lets this be exercised without the
+          # credentials and without burning a signing credit.
+          REQUIRE_WINDOWS_SIGNING: ${{ github.event_name == 'push' && '1' || '0' }}
 
       - name: Attest build provenance for the binaries
         uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
         with:
           subject-path: |
             dist/**/agentsurface
+            dist/**/agentsurface.exe
             dist/**/agentsurface_*
 
       - name: Attest build provenance for the checksums file
@@ -136,6 +164,7 @@ jobs:
           name: dist
           path: |
             dist/*.tar.gz
+            dist/*.zip
             dist/checksums.txt
             dist/checksums.txt.pem
             dist/checksums.txt.sig

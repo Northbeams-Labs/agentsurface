@@ -89,10 +89,9 @@ Version 0.1.0 is released, for macOS and Linux.
 [docs/VERIFY.md](docs/VERIFY.md) is how you check that what you downloaded is
 what this repository's release workflow built.
 
-**On Windows**, use the `go install` line below. There is no published Windows
-binary, and the reason is Authenticode signing rather than code: the detectors
-know the Windows paths, and CI compiles the Windows build on every push. See
-[`.goreleaser.yaml`](.goreleaser.yaml) for the whole reason.
+**On Windows**, use the `go install` line below for now. v0.1.0 has no Windows
+archive; the release pipeline now builds and Authenticode signs one, so the next
+release will. The detectors have known the Windows paths all along.
 
 **1. Homebrew**
 
@@ -121,8 +120,9 @@ copy-pasteable commands for the checksums, the cosign signature over them, and
 the build provenance attestation, plus how to rebuild the binary from source and
 confirm you get the same bytes.
 
-macOS and Linux binaries are published. There is no Windows archive here, for
-the signing reason above; `go install` is the Windows route.
+macOS and Linux archives are published for v0.1.0. The Windows archive arrives
+with the next release, Authenticode signed; until then `go install` is the
+Windows route.
 
 **From source**
 
